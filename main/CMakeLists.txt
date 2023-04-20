@@ -5,7 +5,7 @@ aux_source_directory(. srcs)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/c_prj/inc)
  
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/out)
+set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/out)
 
 add_executable(${CMAKE_PROJECT_NAME} ${srcs})
 
