@@ -1,10 +1,8 @@
 project(fortranprj)
 cmake_minimum_required(VERSION 3.26)
-enable_language(Fortran)
-
-set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_prj/module)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Bellhop)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Cbellhoplib)
 
 # add_library(fortranLib
 #     SHARED
