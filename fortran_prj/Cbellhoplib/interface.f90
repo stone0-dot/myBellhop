@@ -7,11 +7,11 @@ module interface
     USE ArrMod
     USE BeamPatternMod
 contains
-    FUNCTION to_c_chars(fchars) result(c_chars)
+    SUBROUTINE to_c_chars(fchars, c_chars)
         USE iso_c_binding, only: c_null_char, c_char
         IMPLICIT NONE
         character(len=*), intent(in) :: fchars
-        character(len=1, kind=c_char), allocatable :: c_chars(:)
+        character(len=1, kind=c_char), pointer :: c_chars(:)
 
         integer :: i
         integer :: n
@@ -22,12 +22,12 @@ contains
             c_chars(i) = fchars(i:i)
         end do
         c_chars(n + 1) = c_null_char
-    END FUNCTION to_c_chars
+    END SUBROUTINE to_c_chars
     !-----------------------------------------------------------
     SUBROUTINE delete_c_chars(c_chars) bind(C)
         USE iso_c_binding, only: c_null_char, c_char
         IMPLICIT NONE
-        character(len=1, kind=c_char), allocatable :: c_chars(:)
+        character(len=1, kind=c_char), pointer :: c_chars(:)
         deallocate(c_chars)
     END SUBROUTINE delete_c_chars
     !-----------------------------------------------------------
@@ -45,7 +45,7 @@ contains
                CPB_real, CPB_aimag, RHOB, c_RunType, c_BeamType) bind(C)
         USE iso_c_binding, only: c_null_char, c_char
         IMPLICIT REAL (KIND=4) ( A-H, O-Z )
-        character(len=1, kind=c_char), allocatable :: c_TITLE(:), c_TopOpt(:), c_BotOpt(:), c_RunType(:), c_BeamType(:)
+        character(len=1, kind=c_char), pointer :: c_TITLE(:), c_TopOpt(:), c_BotOpt(:), c_RunType(:), c_BeamType(:)
 
         INTEGER, PARAMETER :: PRTFil = 6
         INTEGER :: ISINGL
@@ -63,11 +63,11 @@ contains
         CALL READRC(   BotOpt(1:1), TopOpt(2:2),  PRTFil ) 	! READ Reflection Coefficients (top and bottom)
         CALL READPAT( RunType(3:3),               PRTFil )      ! Read Source Beam Pattern
 
-        c_TITLE = to_c_chars(TITLE)
-        c_TopOpt = to_c_chars(TopOpt)
-        c_BotOpt = to_c_chars(BotOpt)
-        c_RunType = to_c_chars(RunType)
-        c_BeamType = to_c_chars(BeamType)
+        CALL to_c_chars(TITLE, c_TITLE)
+        CALL to_c_chars(TopOpt, c_TopOpt)
+        CALL to_c_chars(BotOpt, c_BotOpt)
+        CALL to_c_chars(RunType, c_RunType)
+        CALL to_c_chars(BeamType, c_BeamType)
 
         CALL pass_complex_to_c(CPT, CPT_real, CPT_aimag)
         CALL pass_complex_to_c(CPB, CPB_real, CPB_aimag)
