@@ -1,11 +1,5 @@
 module interface
-    USE bellMod
-    USE RefCoMod
-    USE bdryMod
-    USE angleMod
-    USE SdRdRMod
-    USE ArrMod
-    USE BeamPatternMod
+    
 contains
     SUBROUTINE to_c_chars(fchars, c_chars)
         USE iso_c_binding, only: c_null_char, c_char
@@ -39,20 +33,28 @@ contains
         c_aimag = aimag(fcomplex)
     END SUBROUTINE pass_complex_to_c
     !-----------------------------------------------------------
-    SUBROUTINE readConfig( c_TITLE, freq, ISINGL, &
-               NIMAGE, IBWIN, deltas, MaxN, zBox, rBox, EPMULT, RLOOP,  &
-               c_TopOpt, DepthT, CPT_real, CPT_aimag, RHOT, c_BotOpt, DepthB, &
-               CPB_real, CPB_aimag, RHOB, c_RunType, c_BeamType) bind(C)
+    SUBROUTINE readConfig( c_TITLE, c_freq, c_ISINGL, &
+               c_NIMAGE, c_IBWIN, c_deltas, c_MaxN, c_zBox, c_rBox, c_EPMULT, c_RLOOP,  &
+               c_TopOpt, c_DepthT, CPT_real, CPT_aimag, c_RHOT, c_BotOpt, c_DepthB, &
+               CPB_real, CPB_aimag, c_RHOB, c_RunType, c_BeamType) bind(C)
+        
         USE iso_c_binding, only: c_null_char, c_char
-        IMPLICIT REAL (KIND=4) ( A-H, O-Z )
+        USE bellMod
+        USE RefCoMod
+        USE bdryMod
+        USE angleMod
+        USE SdRdRMod
+        USE ArrMod
+        USE BeamPatternMod
+
+        CHARACTER TITLE*80, BotOpt*3, RunType*4, BeamType*3
         character(len=1, kind=c_char), pointer :: c_TITLE(:), c_TopOpt(:), c_BotOpt(:), c_RunType(:), c_BeamType(:)
 
-        INTEGER, PARAMETER :: PRTFil = 6
-        INTEGER :: ISINGL
+        INTEGER, intent(out) :: c_ISINGL, c_NIMAGE, c_IBWIN, c_MaxN
+        real(4), intent(out) :: c_freq, c_deltas, c_zBox, c_rBox, c_EPMULT, c_RLOOP,&
+                                c_DepthT, c_DepthB
         
-        COMPLEX (KIND=8) ::   CPT, CPB
-        real(8), intent(out) :: CPT_real, CPT_aimag, CPB_real, CPB_aimag
-        CHARACTER    TITLE*80, TopOpt*5, BotOpt*3, RunType*4, BeamType*3
+        real(8), intent(out) :: CPT_real, CPT_aimag, CPB_real, CPB_aimag, c_RHOT, c_RHOB
         
         CALL READIN( TITLE, freq, ISINGL, &
              NIMAGE, IBWIN, deltas, MaxN, zBox, rBox, EPMULT, RLOOP,  &
@@ -62,6 +64,19 @@ contains
         CALL READBTY(  BotOpt(2:2), DepthB, rBox, PRTFil )      ! READ BaThYmetrY
         CALL READRC(   BotOpt(1:1), TopOpt(2:2),  PRTFil ) 	! READ Reflection Coefficients (top and bottom)
         CALL READPAT( RunType(3:3),               PRTFil )      ! Read Source Beam Pattern
+
+        c_ISINGL = ISINGL
+        c_NIMAGE = NIMAGE
+        c_IBWIN = IBWIN
+        c_MaxN = MaxN
+        c_freq = freq
+        c_deltas = deltas
+        c_zBox = zBox
+        c_rBox = rBox
+        c_EPMULT = EPMULT
+        c_RLOOP = RLOOP
+        c_DepthT = DepthT
+        c_DepthB = DepthB
 
         CALL to_c_chars(TITLE, c_TITLE)
         CALL to_c_chars(TopOpt, c_TopOpt)
@@ -98,31 +113,61 @@ contains
         end do
     END SUBROUTINE pass_c_chars_to_fchars
     !--------------------------------------------------------------
-    SUBROUTINE caculate(freq, ISINGL, NIMAGE, IBWIN, deltas, MaxN, zBox, rBox, &
-                        EPMULT, RLOOP,c_TopOpt, DepthT, CPT_real, CPT_aimag, RHOT, &
-                        c_BotOpt, DepthB,CPB_real, CPB_aimag, RHOB, c_RunType, c_BeamType) bind(C)
+    SUBROUTINE caculate(c_freq, c_ISINGL, c_NIMAGE, c_IBWIN, c_deltas, c_MaxN, c_zBox, c_rBox, &
+                        c_EPMULT, c_RLOOP,c_TopOpt, c_DepthT, CPT_real, CPT_aimag, c_RHOT, &
+                        c_BotOpt, c_DepthB, CPB_real, CPB_aimag, c_RHOB, c_RunType, c_BeamType) bind(C)
         USE iso_c_binding, only: c_null_char, c_char
+        USE bellMod
+        USE RefCoMod
+        USE bdryMod
+        USE angleMod
+        USE SdRdRMod
+        USE ArrMod
+        USE BeamPatternMod
         character(len=1, kind=c_char), intent(in) :: c_TopOpt(5), c_BotOpt(3), c_RunType(4), c_BeamType(3)
-        complex*8 :: CPT, CPB
         real(8) :: CPT_real, CPT_aimag, CPB_real, CPB_aimag
-        real(4), intent(in) :: freq, deltas, zBox, rBox, EPMULT, RLOOP, DepthT, RHOT, DepthB, RHOB
-        integer(4), intent(in) :: ISINGL, NIMAGE, IBWIN, MaxN
+        real(4), intent(in) :: c_freq, c_deltas, c_zBox, c_rBox, c_EPMULT, c_RLOOP, c_DepthT, c_DepthB
+        real(8), intent(in) :: c_RHOT, c_RHOB
+        integer(4), intent(in) :: c_ISINGL, c_NIMAGE, c_IBWIN, c_MaxN
         COMPLEX,  ALLOCATABLE ::   U( :, : )
         INTEGER, PARAMETER    :: SHDFIL = 25, RAYFIL = 21, ArrivalsStorage = 20000000
         REAL,    PARAMETER    :: DegRad = pi / 180.0
         INTEGER   IBPvec( 1 )
         REAL      xs( 2 ), gradc( 2 )
         COMPLEX   EPS, PICKEPS
-        CHARACTER(len=:), allocatable :: BotOpt, RunType, BeamType, TopOpt
-        integer(4) :: TopOpt_len, BotOpt_len, RunType_len, BeamType_len
+        CHARACTER BotOpt*3, RunType*4, BeamType*3
+        integer i
 
         CPT = COMPLEX(CPT_real, CPT_aimag)
         CPB = COMPLEX(CPB_real, CPB_aimag)
-        
-        CALL pass_c_chars_to_fchars(c_TopOpt, TopOpt, 5)
-        CALL pass_c_chars_to_fchars(c_BotOpt, BotOpt, 3)
-        CALL pass_c_chars_to_fchars(c_RunType, RunType, 4)
-        CALL pass_c_chars_to_fchars(c_BeamType, BeamType, 3)
+        freq = c_freq
+        deltas = c_deltas
+        zBox = c_zBox
+        rBox = c_rBox
+        EPMULT = c_EPMULT
+        RLOOP = c_RLOOP
+        DepthT = c_DepthT
+        DepthB = c_DepthB
+        RHOT = c_RHOT
+        RHOB = c_RHOB
+        ISINGL = c_ISINGL
+        NIMAGE = c_NIMAGE
+        IBWIN = c_IBWIN
+
+        do i = 1, 5
+            TopOpt(i:i) = c_TopOpt(i)
+        end do
+        do i = 1, 3
+            BotOpt(i:i) = c_BotOpt(i)
+            BeamType(i:i) = c_BeamType(i)
+        end do
+        do i = 1, 4
+            RunType(i:i) = c_RunType(i)
+        end do
+        ! CALL pass_c_chars_to_fchars(c_TopOpt, TopOpt, 5)
+        ! CALL pass_c_chars_to_fchars(c_BotOpt, BotOpt, 3)
+        ! CALL pass_c_chars_to_fchars(c_RunType, RunType, 4)
+        ! CALL pass_c_chars_to_fchars(c_BeamType, BeamType, 3)
         
         IF ( SCAN( 'CSI', RunType(1:1) ) /= 0 ) THEN
             ALLOCATE ( U( Nrd, Nr ), Stat = IAllocStat )

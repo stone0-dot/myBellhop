@@ -25,10 +25,10 @@ struct DigitalPara{
     float rloop;
     float deptht;
     struct Complex cpt;
-    float rhot;
+    double rhot;
     float depthb;
     struct Complex cpb;
-    float rhob;
+    double rhob;
 };
 
 

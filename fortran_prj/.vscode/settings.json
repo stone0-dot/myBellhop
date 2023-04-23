@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "readin.h": "c"
+        "readin.h": "c",
+        "interface.h": "c"
     }
 }
