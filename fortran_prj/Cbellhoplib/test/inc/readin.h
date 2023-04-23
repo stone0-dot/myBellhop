@@ -2,11 +2,9 @@
 
 struct Complex
 {
-    float real;
-    float imag;
+    double real;
+    double imag;
 };
-
-
 struct StringPara{
     char* title;
     char* topopt;
@@ -14,7 +12,6 @@ struct StringPara{
     char* runtype;
     char* beamtype;
 };
-
 struct DigitalPara{
     float freq;
     int isingl;
@@ -34,8 +31,10 @@ struct DigitalPara{
     float rhob;
 };
 
+
 extern struct StringPara* stringPara_ptr;
 extern struct DigitalPara* digitalPara_ptr;
 
 void readConfigIn();
+void run();
 void deleteAll();
