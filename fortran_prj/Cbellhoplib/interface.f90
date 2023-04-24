@@ -1,5 +1,8 @@
 module interface
-    
+    type GrowthDoubleVector
+        integer(4) :: eleNum
+        real(8), pointer :: vector(:)
+    end type
 contains
     SUBROUTINE to_c_chars(fchars, c_chars)
         USE iso_c_binding, only: c_null_char, c_char
@@ -113,9 +116,51 @@ contains
         end do
     END SUBROUTINE pass_c_chars_to_fchars
     !--------------------------------------------------------------
+    FUNCTION create_growth_double_vector(capacity)
+        integer(4) :: capacity
+        type(GrowthDoubleVector) :: create_growth_double_vector
+        create_growth_double_vector%eleNum = 0
+        allocate(create_growth_double_vector%vector(capacity))
+    END FUNCTION
+    !--------------------------------------------------------------
+    SUBROUTINE delete_growth_double_vector(vector_ptr) bind(C)
+        real(8), pointer :: vector_ptr(:)
+        deallocate(vector_ptr)
+    END SUBROUTINE
+    !--------------------------------------------------------------
+    SUBROUTINE append(vector1, vector2, length)
+        USE iso_c_binding
+        type(GrowthDoubleVector), intent(inout):: vector1
+        real(c_double), allocatable, intent(in) :: vector2(:)
+        integer(4), intent(in) :: length
+        real(c_double), allocatable :: tmp(:)
+        do 
+            if(vector1%eleNum + size(vector2) < size(vector1%vector)) then
+                exit
+            else
+                if(vector1%eleNum /= 0) then
+                    allocate(tmp(vector1%eleNum))
+                    tmp(1:vector1%eleNum) = vector1%vector(1:vector1%eleNum)
+                    allocate(vector1%vector(2*size(vector1%vector)))
+                    vector1%vector(1:vector1%eleNum) = tmp(1:vector1%eleNum)
+                else
+                    allocate(vector1%vector(2*size(vector1%vector)))
+                end if
+            end if
+        end do
+        vector1%vector(vector1%eleNum+1:vector1%eleNum+length) = vector2(1:length)
+        vector1%eleNum = vector1%eleNum + length
+    END SUBROUTINE append
+    !--------------------------------------------------------------
+    SUBROUTINE delete_c_line_length(c_line_length) bind(C)
+        integer(4), pointer :: c_line_length(:)
+        deallocate(c_line_length)
+    END SUBROUTINE delete_c_line_length
+    !--------------------------------------------------------------
     SUBROUTINE caculate(c_freq, c_ISINGL, c_NIMAGE, c_IBWIN, c_deltas, c_MaxN, c_zBox, c_rBox, &
                         c_EPMULT, c_RLOOP,c_TopOpt, c_DepthT, CPT_real, CPT_aimag, c_RHOT, &
-                        c_BotOpt, c_DepthB, CPB_real, CPB_aimag, c_RHOB, c_RunType, c_BeamType) bind(C)
+                        c_BotOpt, c_DepthB, CPB_real, CPB_aimag, c_RHOB, c_RunType, c_BeamType,&
+                        c_line_length, c_xv_result) bind(C)
         USE iso_c_binding, only: c_null_char, c_char
         USE bellMod
         USE RefCoMod
@@ -136,6 +181,10 @@ contains
         REAL      xs( 2 ), gradc( 2 )
         COMPLEX   EPS, PICKEPS
         CHARACTER BotOpt*3, RunType*4, BeamType*3
+        real(8), allocatable :: xv_1D(:)
+        integer(4), pointer, intent(out) :: c_line_length(:)
+        type(GrowthDoubleVector) :: xv_result
+        real(8), pointer, intent(out) :: c_xv_result(:)
         integer i
 
         CPT = COMPLEX(CPT_real, CPT_aimag)
@@ -231,7 +280,9 @@ contains
             ENDIF
        
             ! *** Trace successive beams ***
-       
+            allocate(c_line_length(NBeams + 1))
+            c_line_length(1) = NBeams
+            xv_result = create_growth_double_vector(50000)
             DO ibeam = 1, NBeams
        
        
@@ -250,7 +301,12 @@ contains
                     CALL TRACE( deltas, xs, alpha( ibeam ), Amp0, BeamType, zBox, rBox, BotOpt, RunType)   ! *** Trace a ray ***
        
                     IF ( RunType(1:1) == 'R' ) THEN     ! Write the ray trajectory to RAYFIL
-                        CALL WRTRAY( alpha0, xv, Trayv, Nsteps, NumTopBnc( Nsteps ), NumBotBnc( Nsteps ), DepthT, DepthB )
+                        CALL WRTRAY( alpha0, xv, N2, Trayv, Nsteps, NumTopBnc( Nsteps ), NumBotBnc( Nsteps ), DepthT, DepthB )
+                        ! allocate(xv_1D(2*N2))
+                        xv_1D = [xv(:,1:N2)]
+                        call append(xv_result, xv_1D, 2*N2)
+                        c_line_length(ibeam + 1) = 2*N2
+                        ! deallocate(xv_1D)
                     ELSE                                ! *** Compute the contribution to the field ***
                         Eps = PICKEPS( BeamType(1:1), omega, C, CZ, alpha( ibeam ), Dalpha, RLOOP, EPMULT ) ! 'optimal' beam constant
                         SELECT CASE ( RunType(2:2) )
@@ -270,6 +326,8 @@ contains
                     END IF
                END IF
             END DO ! Next beam
+
+            c_xv_result => xv_result%vector
        
             ! *** write results to disk ***
        

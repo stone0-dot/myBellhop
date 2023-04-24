@@ -1131,7 +1131,7 @@ FUNCTION PICKEPS( BeamType, omega, C, CZ, alpha, Dalpha, RLOOP, EpsMult )
   
   ! **********************************************************************!
   
-  SUBROUTINE WRTRAY( alpha0, xv, Trayv, Nsteps, NumTopBnc, NumBotBnc, DepthT, DepthB )
+  SUBROUTINE WRTRAY( alpha0, xv, N2, Trayv, Nsteps, NumTopBnc, NumBotBnc, DepthT, DepthB )
   
     ! Compress the ray data keeping every ISKIP point, points near surface or bottom, and last point.
     ! Write to RAYFIL.
@@ -1140,6 +1140,8 @@ FUNCTION PICKEPS( BeamType, omega, C, CZ, alpha, Dalpha, RLOOP, EpsMult )
   
     INTEGER ( KIND = 2 ) :: NumTopBnc, NumBotBnc
     REAL (KIND=8) :: xv( 2, * ), Trayv( 2, * )
+
+    integer, intent(out) :: N2
   
     ! compression
   
