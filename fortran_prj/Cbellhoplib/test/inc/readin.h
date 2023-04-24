@@ -31,6 +31,12 @@ struct DigitalPara{
     double rhob;
 };
 
+struct LineResult;
+
+struct Line{
+    int pointNum;
+    double** contain;
+};
 
 extern struct StringPara* stringPara_ptr;
 extern struct DigitalPara* digitalPara_ptr;
@@ -38,3 +44,8 @@ extern struct DigitalPara* digitalPara_ptr;
 void readConfigIn();
 void run();
 void deleteAll();
+
+int lineResult_getLineNum();
+int lineResult_getPointNum(int order);
+struct Line lineResult_getLine(int order);
+void delete_line(struct Line* line);
