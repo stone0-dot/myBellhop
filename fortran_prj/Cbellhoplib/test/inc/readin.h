@@ -1,5 +1,6 @@
 #pragma once
 
+#include "readin.h"
 struct Complex
 {
     double real;
@@ -31,21 +32,21 @@ struct DigitalPara{
     double rhob;
 };
 
-struct LineResult;
-
-struct Line{
-    int pointNum;
-    double** contain;
-};
-
 extern struct StringPara* stringPara_ptr;
 extern struct DigitalPara* digitalPara_ptr;
-
 void readConfigIn();
 void run();
-void deleteAll();
+void deleteBellhopCache();
 
-int lineResult_getLineNum();
-int lineResult_getPointNum(int order);
-struct Line lineResult_getLine(int order);
-void delete_line(struct Line* line);
+struct CurveResult;
+int getCurveNum();
+
+struct Curve;
+struct Curve* curveCreate(int th);
+void curveDestory(struct Curve* curvePtr);
+int curveSize(const struct Curve* curvePtr);
+struct Point{
+    double x;
+    double y;
+};
+struct Point curveIndex(const struct Curve* curve, int th);

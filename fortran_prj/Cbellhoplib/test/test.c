@@ -4,11 +4,16 @@
 int main(){
     readConfigIn();
     run();
-    struct Line line = lineResult_getLine(1);
-    for(int i = 0; i < line.pointNum; ++i){
-        printf("%lf %lf\n", line.contain[i][0], line.contain[i][1]);
+    int curveNum = getCurveNum();
+    printf("number of curves:%d\n", curveNum);
+    struct Curve* curve2 = curveCreate(2);
+    int curve2Size = curveSize(curve2);
+    printf("The curve has pointNum:%d\n", curve2Size);
+    for(int i = 0; i < curve2Size; ++i){
+        struct Point point = curveIndex(curve2, i);
+        printf("%lf %lf\n", point.x, point.y);
     }
-    delete_line(&line);
-    deleteAll();
+    curveDestory(curve2);
+    deleteBellhopCache();
     return 0;
 }

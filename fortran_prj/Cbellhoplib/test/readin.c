@@ -10,13 +10,13 @@ struct DigitalPara digitalPara;
 struct StringPara* stringPara_ptr = &stringPara;
 struct DigitalPara* digitalPara_ptr = &digitalPara;
 
-struct LineResult{
-    int* c_line_length;
-    double* c_xv_result;
+struct CurveResult{
+    int* curveLengthArr;
+    double* curveContain;
 };
 
-struct LineResult lineResult;
-struct LineResult* lineResult_ptr = &lineResult;
+struct CurveResult curveResult;
+struct CurveResult* curveResultPtr = &curveResult;
 
 void readConfigIn(){
     memset(digitalPara_ptr, 0, sizeof(digitalPara));
@@ -37,51 +37,54 @@ void run(){
     stringPara_ptr->topopt, &digitalPara_ptr->deptht, &digitalPara_ptr->cpt.real,
     &digitalPara_ptr->cpt.imag, &digitalPara_ptr->rhot, stringPara_ptr->botopt,
     &digitalPara_ptr->depthb, &digitalPara_ptr->cpb.real, &digitalPara_ptr->cpb.imag,
-    &digitalPara_ptr->rhob, stringPara_ptr->runtype, stringPara_ptr->beamtype, &lineResult_ptr->c_line_length,
-    &lineResult_ptr->c_xv_result);
+    &digitalPara_ptr->rhob, stringPara_ptr->runtype, stringPara_ptr->beamtype, &curveResultPtr->curveLengthArr,
+    &curveResultPtr->curveContain);
 }
 
-void deleteAll(){
+void deleteBellhopCache(){
     delete_c_chars(&stringPara_ptr->beamtype);
     delete_c_chars(&stringPara_ptr->botopt);
     delete_c_chars(&stringPara_ptr->runtype);
     delete_c_chars(&stringPara_ptr->title);
     delete_c_chars(&stringPara_ptr->topopt);
-    delete_c_line_length(&lineResult_ptr->c_line_length);
-    delete_growth_double_vector(&lineResult_ptr->c_xv_result);
+    delete_c_line_length(&curveResultPtr->curveLengthArr);
+    delete_growth_double_vector(&curveResultPtr->curveContain);
 }
 
-int lineResult_getLineNum(){
-    return lineResult_ptr->c_line_length[0];
+int getCurveNum(){
+    //返回计算得到的声线总条数curveNum
+    return curveResultPtr->curveLengthArr[0];
 }
 
-int lineResult_getPointNum(int order){
-    return lineResult_ptr->c_line_length[order + 1] / 2;
-}
+struct Curve{
+    int start;
+    int end;
+};
 
-struct Line lineResult_getLine(int order){
+struct Curve* curveCreate(int th){
+    //本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<curveNum)
     int start = 0;
-    for(int i = 0; i < order; ++i){
-        start += lineResult_ptr->c_line_length[i + 1];
+    for(int i = 0; i < th; ++i){
+        start += curveResultPtr->curveLengthArr[i + 1];
     }
-    int pointNum = lineResult_ptr->c_line_length[order + 1] / 2;
-    double** contain = (double**)malloc(sizeof(double*)*pointNum);
-    for(int i = 0; i < pointNum; ++i){
-        contain[i] = (double*)malloc(sizeof(double)*2);
-    }
-    for(int i = start; i < start + lineResult_ptr->c_line_length[order + 1];){
-        for(int j = 0; j < 2; ++j){
-            contain[(i - start) / 2][j] = lineResult_ptr->c_xv_result[i];
-            ++i;
-        }
-    }
-    struct Line line = {pointNum, contain};
-    return line;
+    int end = start + curveResultPtr->curveLengthArr[th + 1] - 1;
+    struct Curve* curvePtr = (struct Curve*)malloc(sizeof(struct Curve));
+    curvePtr->start = start;
+    curvePtr->end = end;
+    return curvePtr;
 }
 
-void delete_line(struct Line* line){
-    for(int i = 0; i < line->pointNum; ++i){
-        free(line->contain[i]);
-    }
-    free(line->contain);
+void curveDestory(struct Curve* curvePtr){
+    free(curvePtr);
+}
+
+int curveSize(const struct Curve* curvePtr){
+    //获取curve的总点数pointNum
+    return (curvePtr->end - curvePtr->start + 1) / 2;
+}
+
+struct Point curveIndex(const struct Curve* curvePtr, int th){
+    //本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<pointNum)
+    struct Point point = {curveResultPtr->curveContain[curvePtr->start + th*2 + 0], curveResultPtr->curveContain[curvePtr->start + th*2 + 1]};
+    return point;
 }
