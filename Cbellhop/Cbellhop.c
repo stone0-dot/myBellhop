@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "readin.h"
+#include "Cbellhop.h"
 #include "interface.h"
 
 struct StringPara stringPara = {NULL, NULL, NULL, NULL, NULL};
@@ -75,6 +75,7 @@ struct Curve* curveCreate(int th){
 }
 
 void curveDestory(struct Curve* curvePtr){
+    //释放Curve对象，与curveCreate配对使用
     free(curvePtr);
 }
 

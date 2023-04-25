@@ -1,5 +1,5 @@
 #include "stdio.h"
-#include "readin.h"
+#include "Cbellhop.h"
 
 int main(){
     readConfigIn();

@@ -1,6 +1,4 @@
 #pragma once
-
-#include "readin.h"
 struct Complex
 {
     double real;
