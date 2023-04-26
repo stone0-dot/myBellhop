@@ -1,14 +1,23 @@
 module interface
+   USE iso_c_binding
    type GrowthDoubleVector
       integer(4) :: eleNum
-      real(8), pointer :: vector(:)
+      real(8), allocatable :: vector(:)
    end type
+   character(len=1, kind=c_char), allocatable, target :: c_TITLE(:), &
+      c_TopOpt(:), c_BotOpt(:), c_RunType(:), c_BeamType(:)
+   integer(c_int), target, save :: ISINGL, NIMAGE, IBWIN, MaxN_target
+   real(c_float), target, save :: freq, deltas, zBox, rBox, EPMULT, RLOOP,&
+      DepthT_target, DepthB_target
+   real(c_double), target, save :: CPT_real_target, CPT_aimag_target, CPB_real_target, CPB_aimag_target
+   type(GrowthDoubleVector), target :: xv_result
+   integer(c_int), allocatable, target :: line_length(:)
 contains
    SUBROUTINE to_c_chars(fchars, c_chars)
       USE iso_c_binding, only: c_null_char, c_char
       IMPLICIT NONE
       character(len=*), intent(in) :: fchars
-      character(len=1, kind=c_char), pointer :: c_chars(:)
+      character(len=1, kind=c_char), allocatable, intent(out) :: c_chars(:)
 
       integer :: i
       integer :: n
@@ -21,11 +30,24 @@ contains
       c_chars(n + 1) = c_null_char
    END SUBROUTINE to_c_chars
    !-----------------------------------------------------------
-   SUBROUTINE delete_c_chars(c_chars) bind(C)
+   SUBROUTINE delete_c_chars() bind(C)
       USE iso_c_binding, only: c_null_char, c_char
       IMPLICIT NONE
-      character(len=1, kind=c_char), pointer :: c_chars(:)
-      deallocate(c_chars)
+      if(allocated(c_TITLE)) then
+         deallocate(c_TITLE)
+      end if
+      if(allocated(c_TopOpt)) then
+         deallocate(c_TopOpt)
+      end if
+      if(allocated(c_BotOpt)) then
+         deallocate(c_BotOpt)
+      end if
+      if(allocated(c_RunType)) then
+         deallocate(c_RunType)
+      end if
+      if(allocated(c_BeamType)) then
+         deallocate(c_BeamType)
+      end if
    END SUBROUTINE delete_c_chars
    !-----------------------------------------------------------
    SUBROUTINE pass_complex_to_c(fcomplex, c_real, c_aimag)
@@ -36,10 +58,10 @@ contains
       c_aimag = aimag(fcomplex)
    END SUBROUTINE pass_complex_to_c
    !-----------------------------------------------------------
-   SUBROUTINE readConfig( c_TITLE, c_freq, c_ISINGL, &
+   SUBROUTINE readConfig( c_TITLE_pointer, c_freq, c_ISINGL, &
       c_NIMAGE, c_IBWIN, c_deltas, c_MaxN, c_zBox, c_rBox, c_EPMULT, c_RLOOP,  &
-      c_TopOpt, c_DepthT, CPT_real, CPT_aimag, c_RHOT, c_BotOpt, c_DepthB, &
-      CPB_real, CPB_aimag, c_RHOB, c_RunType, c_BeamType) bind(C)
+      c_TopOpt_pointer, c_DepthT, CPT_real, CPT_aimag, c_RHOT, c_BotOpt_pointer, c_DepthB, &
+      CPB_real, CPB_aimag, c_RHOB, c_RunType_pointer, c_BeamType_pointer) bind(C)
 
       USE iso_c_binding
       USE bellMod
@@ -51,9 +73,10 @@ contains
       USE BeamPatternMod
 
       CHARACTER TITLE*80, BotOpt*3, RunType*4, BeamType*3
-      character(len=1, kind=c_char), pointer :: c_TITLE(:), c_TopOpt(:), c_BotOpt(:), c_RunType(:), c_BeamType(:)
+      type(c_ptr) :: c_TITLE_pointer, c_TopOpt_pointer, c_BotOpt_pointer,&
+         c_RunType_pointer, c_BeamType_pointer
 
-      INTEGER(c_int), intent(out) :: c_ISINGL, c_NIMAGE, c_IBWIN, c_MaxN
+      integer(c_int), intent(out) :: c_ISINGL, c_NIMAGE, c_IBWIN, c_MaxN
       real(c_float), intent(out) :: c_freq, c_deltas, c_zBox, c_rBox, c_EPMULT, c_RLOOP,&
          c_DepthT, c_DepthB
 
@@ -62,6 +85,13 @@ contains
       CALL READIN( TITLE, freq, ISINGL, &
          NIMAGE, IBWIN, deltas, MaxN, zBox, rBox, EPMULT, RLOOP,  &
          TopOpt, DepthT, CPT, RHOT, BotOpt, DepthB, CPB, RHOB, RunType, BeamType)
+      MaxN_target = MaxN
+      DepthT_target = DepthT
+      DepthB_target = DepthB
+      CPT_real_target = REAL(CPT)
+      CPT_aimag_target = aimag(CPT)
+      CPB_real_target = REAL(CPB)
+      CPB_aimag_target = aimag(CPB)
 
       CALL READATI(  TopOpt(5:5), DepthT, rBox, PRTFil )   	! READ AlTImetry
       CALL READBTY(  BotOpt(2:2), DepthB, rBox, PRTFil )      ! READ BaThYmetrY
@@ -69,26 +99,34 @@ contains
       CALL READPAT( RunType(3:3),               PRTFil )      ! Read Source Beam Pattern
 
       CALL to_c_chars(TITLE, c_TITLE)
+      c_TITLE_pointer = c_loc(c_TITLE(1))
       CALL to_c_chars(TopOpt, c_TopOpt)
+      c_TopOpt_pointer = c_loc(c_TopOpt(1))
       CALL to_c_chars(BotOpt, c_BotOpt)
+      c_BotOpt_pointer = c_loc(c_BotOpt(1))
       CALL to_c_chars(RunType, c_RunType)
+      c_RunType_pointer = c_loc(c_RunType(1))
       CALL to_c_chars(BeamType, c_BeamType)
+      c_BeamType_pointer = c_loc(c_BeamType(1))
 
       c_ISINGL = ISINGL
       c_NIMAGE = NIMAGE
       c_IBWIN = IBWIN
-      c_MaxN = MaxN
+      c_MaxN = MaxN_target
       c_freq = freq
       c_deltas = deltas
       c_zBox = zBox
       c_rBox = rBox
       c_EPMULT = EPMULT
       c_RLOOP = RLOOP
-      c_DepthT = DepthT
-      c_DepthB = DepthB
-
-      CALL pass_complex_to_c(CPT, CPT_real, CPT_aimag)
-      CALL pass_complex_to_c(CPB, CPB_real, CPB_aimag)
+      c_DepthT = DepthT_target
+      c_DepthB = DepthB_target
+      CPT_real = CPT_real_target
+      CPT_aimag = CPT_aimag_target
+      CPB_real = CPB_real_target
+      CPB_aimag = CPB_aimag_target
+      c_RHOT = RHOT
+      c_RHOB = RHOB
    end SUBROUTINE readConfig
    !--------------------------------------------------------------
    SUBROUTINE get_c_chars_len(c_chars, length)
@@ -124,7 +162,7 @@ contains
    END FUNCTION
    !--------------------------------------------------------------
    SUBROUTINE delete_growth_double_vector(vector_ptr) bind(C)
-      real(8), pointer :: vector_ptr(:)
+      real(8), allocatable :: vector_ptr(:)
       deallocate(vector_ptr)
    END SUBROUTINE
    !--------------------------------------------------------------
@@ -141,6 +179,7 @@ contains
             if(vector1%eleNum /= 0) then
                allocate(tmp(vector1%eleNum))
                tmp(1:vector1%eleNum) = vector1%vector(1:vector1%eleNum)
+               deallocate(vector1%vector)
                allocate(vector1%vector(2*size(vector1%vector)))
                vector1%vector(1:vector1%eleNum) = tmp(1:vector1%eleNum)
             else
@@ -182,9 +221,9 @@ contains
       COMPLEX   EPS, PICKEPS
       CHARACTER BotOpt*3, RunType*4, BeamType*3
       real(8), allocatable :: xv_1D(:)
-      integer(c_int), pointer, intent(out) :: c_line_length(:)
-      type(GrowthDoubleVector) :: xv_result
-      real(c_double), pointer, intent(out) :: c_xv_result(:)
+      type(c_ptr) :: c_line_length
+      ! type(GrowthDoubleVector) :: xv_result
+      type(c_ptr) :: c_xv_result
       integer i
 
       CPT = COMPLEX(CPT_real, CPT_aimag)
@@ -280,8 +319,8 @@ contains
          ENDIF
 
          ! *** Trace successive beams ***
-         allocate(c_line_length(NBeams + 1))
-         c_line_length(1) = NBeams
+         allocate(line_length(NBeams + 1))
+         line_length(1) = NBeams
          xv_result = create_growth_double_vector(50000)
          DO ibeam = 1, NBeams
 
@@ -305,7 +344,7 @@ contains
                   ! allocate(xv_1D(2*N2))
                   xv_1D = [xv(:,1:N2)]
                   call append(xv_result, xv_1D, 2*N2)
-                  c_line_length(ibeam + 1) = 2*N2
+                  line_length(ibeam + 1) = 2*N2
                   ! deallocate(xv_1D)
                ELSE                                ! *** Compute the contribution to the field ***
                   Eps = PICKEPS( BeamType(1:1), omega, C, CZ, alpha( ibeam ), Dalpha, RLOOP, EPMULT ) ! 'optimal' beam constant
@@ -327,8 +366,8 @@ contains
             END IF
          END DO ! Next beam
 
-         c_xv_result => xv_result%vector
-
+         c_xv_result = c_loc(xv_result%vector(1))
+         c_line_length = c_loc(line_length(1))
          ! *** write results to disk ***
 
          IF ( SCAN( 'CSI', RunType(1:1) ) /= 0 ) THEN   ! TL calculation

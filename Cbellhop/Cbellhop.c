@@ -48,11 +48,7 @@ struct ConfigPara* configParaCreate() {
     return configParaPtr;
 }
 void configParaDestory(struct ConfigPara* configParaPtr) {
-    delete_c_chars(&configParaPtr->stringPara.beamtype);
-    delete_c_chars(&configParaPtr->stringPara.botopt);
-    delete_c_chars(&configParaPtr->stringPara.runtype);
-    delete_c_chars(&configParaPtr->stringPara.title);
-    delete_c_chars(&configParaPtr->stringPara.topopt);
+    delete_c_chars();
     free(configParaPtr);
 }
 void configParaReadConfigIn(struct ConfigPara* configParaPtr) {
