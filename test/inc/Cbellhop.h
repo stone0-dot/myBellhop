@@ -13,7 +13,8 @@ void curveResultDestory(struct CurveResult* curveResultPtr);
 int curveResultGetCurveNum(const struct CurveResult* curveResultPtr);
 
 // 声线计算api，在配置好参数后调用该函数进行计算
-void run(struct ConfigPara* configParaPtr, struct CurveResult* curveResultPtr);
+void run(const struct ConfigPara* configParaPtr,
+         struct CurveResult* curveResultPtr);
 
 struct Curve;
 // 创建声线对象，注:本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<curveNum)
