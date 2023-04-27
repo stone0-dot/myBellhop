@@ -6,7 +6,7 @@ int main() {
     struct ConfigPara* configParaPtr = configParaCreate();
     configParaReadConfigIn(configParaPtr);
     struct CurveResult* curveResultPtr = curveResultCreate();
-    run(configParaPtr, curveResultPtr);
+    curveResultPtr = run(configParaPtr);
     int curveNum = curveResultGetCurveNum(curveResultPtr);
     printf("number of curves:%d\n", curveNum);
     struct Curve* curvePtr2 = curveCreate(curveResultPtr, 2);

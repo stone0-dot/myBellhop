@@ -51,6 +51,27 @@ void configParaDestory(struct ConfigPara* configParaPtr) {
     delete_c_chars();
     free(configParaPtr);
 }
+void configParaSetTitle(struct ConfigPara* configParaPtr, char* title) {
+    configParaPtr->stringPara.title = title;
+}
+void configParaSetTopopt(struct ConfigPara* configParaPtr, char* topopt) {
+    configParaPtr->stringPara.topopt = topopt;
+}
+void configParaSetBotopt(struct ConfigPara* configParaPtr, char* botopt) {
+    configParaPtr->stringPara.botopt = botopt;
+}
+void configParaSetRuntype(struct ConfigPara* configParaPtr, char* runtype) {
+    configParaPtr->stringPara.runtype = runtype;
+}
+void configParaSetBeamtype(struct ConfigPara* configParaPtr, char* beamtype) {
+    configParaPtr->stringPara.beamtype = beamtype;
+}
+void configParaSetFreq(struct ConfigPara* configParaPtr, float freq) {
+    configParaPtr->digitalPara.freq = freq;
+}
+void configParaSetIsingl(struct ConfigPara* configParaPtr, float isingl) {
+    configParaPtr->digitalPara.isingl = isingl;
+}
 void configParaReadConfigIn(struct ConfigPara* configParaPtr) {
     readconfig(
         &configParaPtr->stringPara.title, &configParaPtr->digitalPara.freq,
@@ -86,7 +107,8 @@ int curveResultGetCurveNum(const struct CurveResult* curveResultPtr) {
     return curveResultPtr->curveLengthArr[0];
 }
 
-void run(struct ConfigPara* configParaPtr, struct CurveResult* curveResultPtr) {
+struct CurveResult* run(struct ConfigPara* configParaPtr) {
+    struct CurveResult* curveResultPtr = curveResultCreate();
     caculate(
         &configParaPtr->digitalPara.freq, &configParaPtr->digitalPara.isingl,
         &configParaPtr->digitalPara.nimage, &configParaPtr->digitalPara.ibwin,
@@ -101,6 +123,7 @@ void run(struct ConfigPara* configParaPtr, struct CurveResult* curveResultPtr) {
         &configParaPtr->digitalPara.cpb.imag, &configParaPtr->digitalPara.rhob,
         configParaPtr->stringPara.runtype, configParaPtr->stringPara.beamtype,
         &curveResultPtr->curveLengthArr, &curveResultPtr->curveContain);
+    return curveResultPtr;
 }
 
 struct Curve {
