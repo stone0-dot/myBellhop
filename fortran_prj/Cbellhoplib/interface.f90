@@ -85,13 +85,13 @@ contains
       CALL READIN( TITLE, freq, ISINGL, &
          NIMAGE, IBWIN, deltas, MaxN, zBox, rBox, EPMULT, RLOOP,  &
          TopOpt, DepthT, CPT, RHOT, BotOpt, DepthB, CPB, RHOB, RunType, BeamType)
-      MaxN_target = MaxN
-      DepthT_target = DepthT
-      DepthB_target = DepthB
-      CPT_real_target = REAL(CPT)
-      CPT_aimag_target = aimag(CPT)
-      CPB_real_target = REAL(CPB)
-      CPB_aimag_target = aimag(CPB)
+      ! MaxN_target = MaxN
+      ! DepthT_target = DepthT
+      ! DepthB_target = DepthB
+      ! CPT_real_target = REAL(CPT)
+      ! CPT_aimag_target = aimag(CPT)
+      ! CPB_real_target = REAL(CPB)
+      ! CPB_aimag_target = aimag(CPB)
 
       CALL READATI(  TopOpt(5:5), DepthT, rBox, PRTFil )   	! READ AlTImetry
       CALL READBTY(  BotOpt(2:2), DepthB, rBox, PRTFil )      ! READ BaThYmetrY
@@ -112,19 +112,19 @@ contains
       c_ISINGL = ISINGL
       c_NIMAGE = NIMAGE
       c_IBWIN = IBWIN
-      c_MaxN = MaxN_target
+      c_MaxN = MaxN
       c_freq = freq
       c_deltas = deltas
       c_zBox = zBox
       c_rBox = rBox
       c_EPMULT = EPMULT
       c_RLOOP = RLOOP
-      c_DepthT = DepthT_target
-      c_DepthB = DepthB_target
-      CPT_real = CPT_real_target
-      CPT_aimag = CPT_aimag_target
-      CPB_real = CPB_real_target
-      CPB_aimag = CPB_aimag_target
+      c_DepthT = DepthT
+      c_DepthB = DepthB
+      CPT_real = REAL(CPT)
+      CPT_aimag = AIMAG(CPT)
+      CPB_real = REAL(CPB)
+      CPB_aimag = AIMAG(CPB)
       c_RHOT = RHOT
       c_RHOB = RHOB
    end SUBROUTINE readConfig

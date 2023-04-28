@@ -3,10 +3,10 @@
 #include "Cbellhop.h"
 
 int main() {
-    struct ConfigPara* configParaPtr = configParaCreate();
-    configParaReadConfigIn(configParaPtr);
+    struct FortranConfigPara* fortranConfigParaPtr = fortranConfigParaCreate();
+    fortranConfigParaReadConfigIn(fortranConfigParaPtr);
     struct CurveResult* curveResultPtr = curveResultCreate();
-    curveResultPtr = run(configParaPtr);
+    curveResultPtr = run(fortranConfigParaPtr);
     int curveNum = curveResultGetCurveNum(curveResultPtr);
     printf("number of curves:%d\n", curveNum);
     struct Curve* curvePtr2 = curveCreate(curveResultPtr, 2);
@@ -16,7 +16,7 @@ int main() {
         struct Point point = curveIndex(curveResultPtr, curvePtr2, i);
         printf("%lf %lf\n", point.x, point.y);
     }
-    configParaDestory(configParaPtr);
+    fortranConfigParaDestory(fortranConfigParaPtr);
     curveResultDestory(curveResultPtr);
     curveDestory(curvePtr2);
     return 0;
