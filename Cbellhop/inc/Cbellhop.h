@@ -103,6 +103,22 @@ void cBellhopConfigParaSetzBox(struct CBellhopConfigPara* configParaPtr,
 // 设置rBox
 void cBellhopConfigParaSetrBox(struct CBellhopConfigPara* configParaPtr,
                                const float rBox);
+// 设置epmult
+void cBellhopConfigParaSetepmult(struct CBellhopConfigPara* configParaPtr,
+                                 const float epmult);
+// 设置rloop
+void cBellhopConfigParaSetrloop(struct CBellhopConfigPara* configParaPtr,
+                                const float rloop);
+// 设置Nimage
+void cBellhopConfigParaSetNimage(struct CBellhopConfigPara* configParaPtr,
+                                 const unsigned int Nimage);
+// 设置Ibwin
+void cBellhopConfigParaSetIbwin(struct CBellhopConfigPara* configParaPtr,
+                                const unsigned int Ibwin);
+// 设置ISIGNAL
+void cBellhopConfigParaSetISIGNAL(struct CBellhopConfigPara* configParaPtr,
+                                  const unsigned int ISIGNAL);
+
 // 返回的声线结果
 struct CurveResult;
 // 创建声线结果对象
@@ -113,6 +129,9 @@ int curveResultGetCurveNum(const struct CurveResult* curveResultPtr);
 
 // 声线计算api，在配置好参数后调用该函数进行计算
 struct CurveResult* run(struct FortranConfigPara* configParaPtr);
+// cbellhop运行
+struct CurveResult* cBellhopRun(
+    struct CBellhopConfigPara* cBellhopConfigParaPtr);
 
 struct Curve;
 // 创建声线对象，注:本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<curveNum)

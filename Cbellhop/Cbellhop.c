@@ -114,6 +114,11 @@ struct CBellhopDigitalPara {
     float deltas;
     float zBox;
     float rBox;
+    float epmult;
+    float rloop;
+    int Nimage;
+    int Ibwin;
+    int ISIGNAL;
 };
 struct CBellhopConfigPara {
     struct CBellhopStringPara stringPara;
@@ -357,6 +362,26 @@ void cBellhopConfigParaSetrBox(struct CBellhopConfigPara* configParaPtr,
                                const float rBox) {
     configParaPtr->digitalPara.rBox = rBox;
 }
+void cBellhopConfigParaSetepmult(struct CBellhopConfigPara* configParaPtr,
+                                 const float epmult) {
+    configParaPtr->digitalPara.epmult = epmult;
+}
+void cBellhopConfigParaSetrloop(struct CBellhopConfigPara* configParaPtr,
+                                const float rloop) {
+    configParaPtr->digitalPara.rloop = rloop;
+}
+void cBellhopConfigParaSetNimage(struct CBellhopConfigPara* configParaPtr,
+                                 const unsigned int Nimage) {
+    configParaPtr->digitalPara.Nimage = Nimage;
+}
+void cBellhopConfigParaSetIbwin(struct CBellhopConfigPara* configParaPtr,
+                                const unsigned int Ibwin) {
+    configParaPtr->digitalPara.Ibwin = Ibwin;
+}
+void cBellhopConfigParaSetISIGNAL(struct CBellhopConfigPara* configParaPtr,
+                                  const unsigned int ISIGNAL) {
+    configParaPtr->digitalPara.ISIGNAL = ISIGNAL;
+}
 //----------------------------------------------------------------------------------------
 struct CurveResult {
     int* curveLengthArr;
@@ -401,6 +426,54 @@ struct CurveResult* run(struct FortranConfigPara* fortranConfigParaPtr) {
              fortranConfigParaPtr->stringPara.runtype,
              fortranConfigParaPtr->stringPara.beamtype,
              &curveResultPtr->curveLengthArr, &curveResultPtr->curveContain);
+    return curveResultPtr;
+}
+
+struct CurveResult* cBellhopRun(
+    struct CBellhopConfigPara* cBellhopConfigParaPtr) {
+    struct CurveResult* curveResultPtr = curveResultCreate();
+    ccaculate(&cBellhopConfigParaPtr->stringPara.title.arr,
+              &cBellhopConfigParaPtr->stringPara.title.size,
+              &cBellhopConfigParaPtr->digitalPara.freq,
+              &cBellhopConfigParaPtr->digitalPara.ISIGNAL,
+              &cBellhopConfigParaPtr->digitalPara.Nimage,
+              &cBellhopConfigParaPtr->digitalPara.Ibwin,
+              &cBellhopConfigParaPtr->digitalPara.deltas,
+              &cBellhopConfigParaPtr->digitalPara.zBox,
+              &cBellhopConfigParaPtr->digitalPara.rBox,
+              &cBellhopConfigParaPtr->digitalPara.epmult,
+              &cBellhopConfigParaPtr->digitalPara.rloop,
+              cBellhopConfigParaPtr->stringPara.topopt.arr,
+              cBellhopConfigParaPtr->stringPara.botopt.arr,
+              &cBellhopConfigParaPtr->digitalPara.DepthB,
+              cBellhopConfigParaPtr->stringPara.runtype.arr,
+              cBellhopConfigParaPtr->stringPara.beamtype.arr,
+              &curveResultPtr->curveLengthArr, &curveResultPtr->curveContain,
+              &cBellhopConfigParaPtr->digitalPara.NMedia,
+              &cBellhopConfigParaPtr->digitalPara.zSSPV.arr,
+              &cBellhopConfigParaPtr->digitalPara.cSSPV.arr,
+              &cBellhopConfigParaPtr->digitalPara.SD.arr,
+              &cBellhopConfigParaPtr->digitalPara.RD.arr,
+              &cBellhopConfigParaPtr->digitalPara.R.arr,
+              &cBellhopConfigParaPtr->digitalPara.angle.arr,
+              &cBellhopConfigParaPtr->digitalPara.zSSPV.size,
+              &cBellhopConfigParaPtr->digitalPara.cSSPV.size,
+              &cBellhopConfigParaPtr->digitalPara.SD.size,
+              &cBellhopConfigParaPtr->digitalPara.NSD,
+              &cBellhopConfigParaPtr->digitalPara.RD.size,
+              &cBellhopConfigParaPtr->digitalPara.NRD,
+              &cBellhopConfigParaPtr->digitalPara.R.size,
+              &cBellhopConfigParaPtr->digitalPara.NR,
+              &cBellhopConfigParaPtr->digitalPara.angle.size,
+              &cBellhopConfigParaPtr->digitalPara.alphaR,
+              &cBellhopConfigParaPtr->digitalPara.betaR,
+              &cBellhopConfigParaPtr->digitalPara.rhoR,
+              &cBellhopConfigParaPtr->digitalPara.alphaI,
+              &cBellhopConfigParaPtr->digitalPara.betaI,
+              &cBellhopConfigParaPtr->digitalPara.BSigma,
+              &cBellhopConfigParaPtr->digitalPara.TSigma,
+              &cBellhopConfigParaPtr->digitalPara.NPts,
+              &cBellhopConfigParaPtr->digitalPara.NBEAMS);
     return curveResultPtr;
 }
 //------------------------------------------------------------------------------------------
