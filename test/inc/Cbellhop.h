@@ -1,4 +1,8 @@
 #pragma once
+#include "Vector.h"
+
+INIT_VECTOR_TYPE(char)
+INIT_VECTOR_TYPE(float)
 
 // fortran接口参数包
 struct FortranConfigPara;
@@ -11,7 +15,113 @@ void fortranConfigParaReadConfigIn(
 void fortranConfigParaDestory(struct FortranConfigPara* fortranConfigParaPtr);
 
 // Cbellhop参数包
-struct CBellhopConfigPara;
+struct CBellhopStringPara {
+    struct Vectorchar title;
+    struct Vectorchar topopt;
+    struct Vectorchar botopt;
+    struct Vectorchar runtype;
+    struct Vectorchar beamtype;
+};
+struct CBellhopDigitalPara {
+    float freq;
+    int NMedia;
+    int NPts;
+    float TSigma;
+    float BSigma;
+    float DepthB;
+    struct Vectorfloat zSSPV;
+    struct Vectorfloat cSSPV;
+    double alphaR;
+    double betaR;
+    double rhoR;
+    double alphaI;
+    double betaI;
+    int NSD;
+    struct Vectorfloat SD;
+    int NRD;
+    struct Vectorfloat RD;
+    int NR;
+    struct Vectorfloat R;
+    int NBEAMS;
+    struct Vectorfloat angle;
+    float deltas;
+    float zBox;
+    float rBox;
+    float epmult;
+    float rloop;
+    int Nimage;
+    int Ibwin;
+    int ISIGNAL;
+};
+struct CBellhopConfigPara {
+    struct CBellhopStringPara stringPara;
+    struct CBellhopDigitalPara digitalPara;
+    void (*destory)(struct CBellhopConfigPara* configParaPtr);
+    void (*setTitle)(struct CBellhopConfigPara* configParaPtr,
+                     const char* title);
+    void (*setTopopt)(struct CBellhopConfigPara* configParaPtr,
+                      const char* topopt);
+    void (*setBotopt)(struct CBellhopConfigPara* configParaPtr,
+                      const char* botopt);
+    void (*setRuntype)(struct CBellhopConfigPara* configParaPtr,
+                       const char* runtype);
+    void (*setBeamtype)(struct CBellhopConfigPara* configParaPtr,
+                        const char* beamtype);
+    void (*setFreq)(struct CBellhopConfigPara* configParaPtr, const float freq);
+    void (*setNMedia)(struct CBellhopConfigPara* configParaPtr,
+                      const int NMedia);
+    void (*setNPts)(struct CBellhopConfigPara* configParaPtr, const int NPts);
+    void (*setTSigma)(struct CBellhopConfigPara* configParaPtr,
+                      const float TSigma);
+    void (*setBSigma)(struct CBellhopConfigPara* configParaPtr,
+                      const float BSigma);
+    void (*setDepthB)(struct CBellhopConfigPara* configParaPtr,
+                      const float DepthB);
+    void (*setzSSPV)(struct CBellhopConfigPara* configParaPtr,
+                     const float* zSSPV, const unsigned int len);
+    void (*setcSSPV)(struct CBellhopConfigPara* configParaPtr,
+                     const float* cSSPV, const unsigned int len);
+    void (*setalphaR)(struct CBellhopConfigPara* configParaPtr,
+                      const double alphaR);
+    void (*setbetaR)(struct CBellhopConfigPara* configParaPtr,
+                     const double betaR);
+    void (*setrhoR)(struct CBellhopConfigPara* configParaPtr,
+                    const double rhoR);
+    void (*setalphaI)(struct CBellhopConfigPara* configParaPtr,
+                      const double alphaI);
+    void (*setbetaI)(struct CBellhopConfigPara* configParaPtr,
+                     const double betaI);
+    void (*setNSD)(struct CBellhopConfigPara* configParaPtr,
+                   const unsigned int NSD);
+    void (*setSD)(struct CBellhopConfigPara* configParaPtr, const float* SD,
+                  const unsigned int len);
+    void (*setNRD)(struct CBellhopConfigPara* configParaPtr,
+                   const unsigned int NRD);
+    void (*setRD)(struct CBellhopConfigPara* configParaPtr, const float* RD,
+                  const unsigned int len);
+    void (*setNR)(struct CBellhopConfigPara* configParaPtr,
+                  const unsigned int NR);
+    void (*setR)(struct CBellhopConfigPara* configParaPtr, const float* R,
+                 const unsigned int len);
+    void (*setNBEAMS)(struct CBellhopConfigPara* configParaPtr,
+                      const unsigned int NBEAMS);
+    void (*setangle)(struct CBellhopConfigPara* configParaPtr,
+                     const float* angle, const unsigned int len);
+    void (*setdeltas)(struct CBellhopConfigPara* configParaPtr,
+                      const float deltas);
+    void (*setzBox)(struct CBellhopConfigPara* configParaPtr, const float zBox);
+    void (*setrBox)(struct CBellhopConfigPara* configParaPtr, const float rBox);
+    void (*setepmult)(struct CBellhopConfigPara* configParaPtr,
+                      const float epmult);
+    void (*setrloop)(struct CBellhopConfigPara* configParaPtr,
+                     const float rloop);
+    void (*setNimage)(struct CBellhopConfigPara* configParaPtr,
+                      const unsigned int Nimage);
+    void (*setIbwin)(struct CBellhopConfigPara* configParaPtr,
+                     const unsigned int Ibwin);
+    void (*setISIGNAL)(struct CBellhopConfigPara* configParaPtr,
+                       const unsigned int ISIGNAL);
+};
 // 创建Cbellhop参数包
 struct CBellhopConfigPara* cBellhopConfigParaCreate();
 // 析构Cbellhop参数包
@@ -119,8 +229,13 @@ void cBellhopConfigParaSetIbwin(struct CBellhopConfigPara* configParaPtr,
 void cBellhopConfigParaSetISIGNAL(struct CBellhopConfigPara* configParaPtr,
                                   const unsigned int ISIGNAL);
 
-// 返回的声线结果
-struct CurveResult;
+// 返回的声线结果类声明
+struct CurveResult {
+    int* curveLengthArr;
+    double* curveContain;
+    void (*destory)(struct CurveResult* curveResultPtr);
+    int (*getCurveNum)(const struct CurveResult* curveResultPtr);
+};
 // 创建声线结果对象
 struct CurveResult* curveResultCreate();
 void curveResultDestory(struct CurveResult* curveResultPtr);
@@ -133,7 +248,13 @@ struct CurveResult* run(struct FortranConfigPara* configParaPtr);
 struct CurveResult* cBellhopRun(
     struct CBellhopConfigPara* cBellhopConfigParaPtr);
 
-struct Curve;
+struct Curve {
+    double* start;
+    double* end;
+    void (*destory)(struct Curve* curvePtr);
+    int (*size)(const struct Curve* curvePtr);
+    struct Point (*index)(const struct Curve* curvePtr, int idx);
+};
 // 创建声线对象，注:本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<curveNum)
 struct Curve* curveCreate(const struct CurveResult* curveResultPtr, int th);
 // 释放Curve对象，与curveCreate配对使用
@@ -145,5 +266,4 @@ struct Point {
     double y;
 };
 // 输入索引值，返回point(x,y),注:本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<pointNum)
-struct Point curveIndex(const struct CurveResult* curveResultPtr,
-                        const struct Curve* curvePtr, int th);
+struct Point curveIndex(const struct Curve* curvePtr, int th);

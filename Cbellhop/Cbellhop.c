@@ -4,11 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Vector.h"
 #include "interface.h"
-
-INIT_VECTOR_TYPE(char)
-INIT_VECTOR_TYPE(float)
 
 struct Complex {
     double real;
@@ -44,6 +40,9 @@ struct FortranConfigPara {
     struct StringPara stringPara;
     struct DigitalPara digitalPara;
 };
+//------------------------------------------------------------------------------------------
+// FortranConfigPara类的成员函数
+//------------------------------------------------------------------------------------------
 struct FortranConfigPara* fortranConfigParaCreate() {
     struct FortranConfigPara* fortranConfigParaPtr =
         (struct FortranConfigPara*)malloc(sizeof(struct FortranConfigPara));
@@ -81,53 +80,48 @@ void fortranConfigParaReadConfigIn(
                &fortranConfigParaPtr->stringPara.runtype,
                &fortranConfigParaPtr->stringPara.beamtype);
 }
-//--------------------------------------------------------------------------------
-struct CBellhopStringPara {
-    struct Vectorchar title;
-    struct Vectorchar topopt;
-    struct Vectorchar botopt;
-    struct Vectorchar runtype;
-    struct Vectorchar beamtype;
-};
-struct CBellhopDigitalPara {
-    float freq;
-    int NMedia;
-    int NPts;
-    float TSigma;
-    float BSigma;
-    float DepthB;
-    struct Vectorfloat zSSPV;
-    struct Vectorfloat cSSPV;
-    double alphaR;
-    double betaR;
-    double rhoR;
-    double alphaI;
-    double betaI;
-    int NSD;
-    struct Vectorfloat SD;
-    int NRD;
-    struct Vectorfloat RD;
-    int NR;
-    struct Vectorfloat R;
-    int NBEAMS;
-    struct Vectorfloat angle;
-    float deltas;
-    float zBox;
-    float rBox;
-    float epmult;
-    float rloop;
-    int Nimage;
-    int Ibwin;
-    int ISIGNAL;
-};
-struct CBellhopConfigPara {
-    struct CBellhopStringPara stringPara;
-    struct CBellhopDigitalPara digitalPara;
-};
+//------------------------------------------------------------------------------------------
+// CBellhopConfigPara类的成员函数
+//------------------------------------------------------------------------------------------
 struct CBellhopConfigPara* cBellhopConfigParaCreate() {
     struct CBellhopConfigPara* cBellhopConfigParaPtr =
         (struct CBellhopConfigPara*)malloc(sizeof(struct CBellhopConfigPara));
     memset(cBellhopConfigParaPtr, 0, sizeof(struct CBellhopConfigPara));
+    cBellhopConfigParaPtr->destory = &cBellhopConfigParaDestory;
+    cBellhopConfigParaPtr->setTitle = &cBellhopConfigParaSetTitle;
+    cBellhopConfigParaPtr->setTopopt = &cBellhopConfigParaSetTopopt;
+    cBellhopConfigParaPtr->setBotopt = &cBellhopConfigParaSetBotopt;
+    cBellhopConfigParaPtr->setRuntype = &cBellhopConfigParaSetRuntype;
+    cBellhopConfigParaPtr->setBeamtype = &cBellhopConfigParaSetBeamtype;
+    cBellhopConfigParaPtr->setFreq = &cBellhopConfigParaSetFreq;
+    cBellhopConfigParaPtr->setNMedia = &cBellhopConfigParaSetNMedia;
+    cBellhopConfigParaPtr->setNPts = &cBellhopConfigParaSetNPts;
+    cBellhopConfigParaPtr->setTSigma = &cBellhopConfigParaSetTSigma;
+    cBellhopConfigParaPtr->setBSigma = &cBellhopConfigParaSetBSigma;
+    cBellhopConfigParaPtr->setDepthB = &cBellhopConfigParaSetDepthB;
+    cBellhopConfigParaPtr->setzSSPV = &cBellhopConfigParaSetzSSPV;
+    cBellhopConfigParaPtr->setcSSPV = &cBellhopConfigParaSetcSSPV;
+    cBellhopConfigParaPtr->setalphaR = &cBellhopConfigParaSetalphaR;
+    cBellhopConfigParaPtr->setbetaR = &cBellhopConfigParaSetbetaR;
+    cBellhopConfigParaPtr->setrhoR = &cBellhopConfigParaSetrhoR;
+    cBellhopConfigParaPtr->setalphaI = &cBellhopConfigParaSetalphaI;
+    cBellhopConfigParaPtr->setbetaI = &cBellhopConfigParaSetbetaI;
+    cBellhopConfigParaPtr->setNSD = &cBellhopConfigParaSetNSD;
+    cBellhopConfigParaPtr->setSD = &cBellhopConfigParaSetSD;
+    cBellhopConfigParaPtr->setNRD = &cBellhopConfigParaSetNRD;
+    cBellhopConfigParaPtr->setRD = &cBellhopConfigParaSetRD;
+    cBellhopConfigParaPtr->setNR = &cBellhopConfigParaSetNR;
+    cBellhopConfigParaPtr->setR = &cBellhopConfigParaSetR;
+    cBellhopConfigParaPtr->setNBEAMS = &cBellhopConfigParaSetNBEAMS;
+    cBellhopConfigParaPtr->setangle = &cBellhopConfigParaSetangle;
+    cBellhopConfigParaPtr->setdeltas = &cBellhopConfigParaSetdeltas;
+    cBellhopConfigParaPtr->setzBox = &cBellhopConfigParaSetzBox;
+    cBellhopConfigParaPtr->setrBox = &cBellhopConfigParaSetrBox;
+    cBellhopConfigParaPtr->setepmult = &cBellhopConfigParaSetepmult;
+    cBellhopConfigParaPtr->setrloop = &cBellhopConfigParaSetrloop;
+    cBellhopConfigParaPtr->setNimage = &cBellhopConfigParaSetNimage;
+    cBellhopConfigParaPtr->setIbwin = &cBellhopConfigParaSetIbwin;
+    cBellhopConfigParaPtr->setISIGNAL = &cBellhopConfigParaSetISIGNAL;
     return cBellhopConfigParaPtr;
 }
 void cBellhopConfigParaDestory(struct CBellhopConfigPara* configParaPtr) {
@@ -382,14 +376,14 @@ void cBellhopConfigParaSetISIGNAL(struct CBellhopConfigPara* configParaPtr,
                                   const unsigned int ISIGNAL) {
     configParaPtr->digitalPara.ISIGNAL = ISIGNAL;
 }
-//----------------------------------------------------------------------------------------
-struct CurveResult {
-    int* curveLengthArr;
-    double* curveContain;
-};
+//------------------------------------------------------------------------------------------
+// CurveResult类的成员函数
+//------------------------------------------------------------------------------------------
 struct CurveResult* curveResultCreate() {
     struct CurveResult* curveResultPtr =
         (struct CurveResult*)malloc(sizeof(struct CurveResult));
+    curveResultPtr->destory = &curveResultDestory;
+    curveResultPtr->getCurveNum = &curveResultGetCurveNum;
     return curveResultPtr;
 }
 void curveResultDestory(struct CurveResult* curveResultPtr) {
@@ -400,7 +394,9 @@ void curveResultDestory(struct CurveResult* curveResultPtr) {
 int curveResultGetCurveNum(const struct CurveResult* curveResultPtr) {
     return curveResultPtr->curveLengthArr[0];
 }
-
+//------------------------------------------------------------------------------------------
+// 运行函数，调用fortran版本bellhop的计算api
+//------------------------------------------------------------------------------------------
 struct CurveResult* run(struct FortranConfigPara* fortranConfigParaPtr) {
     struct CurveResult* curveResultPtr = curveResultCreate();
     caculate(&fortranConfigParaPtr->digitalPara.freq,
@@ -477,35 +473,28 @@ struct CurveResult* cBellhopRun(
     return curveResultPtr;
 }
 //------------------------------------------------------------------------------------------
-struct Curve {
-    int start;
-    int end;
-};
+// Curve类的成员函数
+//------------------------------------------------------------------------------------------
 struct Curve* curveCreate(const struct CurveResult* curveResultPtr, int th) {
-    // 本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<curveNum)
-    int start = 0;
+    double* start = curveResultPtr->curveContain;
     for (int i = 0; i < th; ++i) {
         start += curveResultPtr->curveLengthArr[i + 1];
     }
-    int end = start + curveResultPtr->curveLengthArr[th + 1] - 1;
+    double* end = start + curveResultPtr->curveLengthArr[th + 1];
     struct Curve* curvePtr = (struct Curve*)malloc(sizeof(struct Curve));
     curvePtr->start = start;
     curvePtr->end = end;
+    curvePtr->destory = &curveDestory;
+    curvePtr->size = &curveSize;
+    curvePtr->index = &curveIndex;
     return curvePtr;
 }
-void curveDestory(struct Curve* curvePtr) {
-    // 释放Curve对象，与curveCreate配对使用
-    free(curvePtr);
-}
+void curveDestory(struct Curve* curvePtr) { free(curvePtr); }
 int curveSize(const struct Curve* curvePtr) {
-    // 获取curve的总点数pointNum
-    return (curvePtr->end - curvePtr->start + 1) / 2;
+    return (int)((curvePtr->end - curvePtr->start) / 2);
 }
-struct Point curveIndex(const struct CurveResult* curveResultPtr,
-                        const struct Curve* curvePtr, int th) {
-    // 本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<pointNum)
-    struct Point point = {
-        curveResultPtr->curveContain[curvePtr->start + th * 2 + 0],
-        curveResultPtr->curveContain[curvePtr->start + th * 2 + 1]};
+struct Point curveIndex(const struct Curve* curvePtr, int idx) {
+    struct Point point = {curvePtr->start[idx * 2 + 0],
+                          curvePtr->start[idx * 2 + 1]};
     return point;
 }
