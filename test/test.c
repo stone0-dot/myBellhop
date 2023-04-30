@@ -25,7 +25,7 @@ int main() {
                        1513.7857, 1509.2453, 1504.9981, 1500.6822};
     cBellhopConfigParaPtr->setzSSPV(cBellhopConfigParaPtr, zSSPV, 29);
     cBellhopConfigParaPtr->setcSSPV(cBellhopConfigParaPtr, cSSPV, 29);
-    cBellhopConfigParaPtr->setBotopt(cBellhopConfigParaPtr, "A  ");
+    cBellhopConfigParaPtr->setBotopt(cBellhopConfigParaPtr, "A* ");
     cBellhopConfigParaPtr->setBSigma(cBellhopConfigParaPtr, 0);
     cBellhopConfigParaPtr->setalphaR(cBellhopConfigParaPtr, 2000);
     cBellhopConfigParaPtr->setbetaR(cBellhopConfigParaPtr, 450);
@@ -49,6 +49,9 @@ int main() {
     cBellhopConfigParaPtr->setzBox(cBellhopConfigParaPtr, 368.127);
     cBellhopConfigParaPtr->setrBox(cBellhopConfigParaPtr, 101);
     cBellhopConfigParaPtr->setBeamtype(cBellhopConfigParaPtr, "MS ");
+    cBellhopConfigParaPtr->setNbtyPts(cBellhopConfigParaPtr, 3);
+    double btyPts[6] = {0, 3000, 5, 3000, 10, 3000};
+    cBellhopConfigParaPtr->setbtyPts(cBellhopConfigParaPtr, btyPts, 6);
     struct CurveResult* curveResultPtr = cBellhopRun(cBellhopConfigParaPtr);
     int curveNum = curveResultPtr->getCurveNum(curveResultPtr);
     printf("The curveResult has total curve num : %d\n", curveNum);
@@ -62,7 +65,7 @@ int main() {
         }
         curveObjPtr->destory(curveObjPtr);
     }
-    cBellhopConfigParaDestory(cBellhopConfigParaPtr);
+    cBellhopConfigParaPtr->destory(cBellhopConfigParaPtr);
     curveResultPtr->destory(curveResultPtr);
     return 0;
 }

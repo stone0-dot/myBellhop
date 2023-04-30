@@ -122,6 +122,8 @@ struct CBellhopConfigPara* cBellhopConfigParaCreate() {
     cBellhopConfigParaPtr->setNimage = &cBellhopConfigParaSetNimage;
     cBellhopConfigParaPtr->setIbwin = &cBellhopConfigParaSetIbwin;
     cBellhopConfigParaPtr->setISIGNAL = &cBellhopConfigParaSetISIGNAL;
+    cBellhopConfigParaPtr->setNbtyPts = &cBellhopConfigParaSetNbtyPts;
+    cBellhopConfigParaPtr->setbtyPts = &cBellhopConfigParaSetbtyPts;
     return cBellhopConfigParaPtr;
 }
 void cBellhopConfigParaDestory(struct CBellhopConfigPara* configParaPtr) {
@@ -137,6 +139,8 @@ void cBellhopConfigParaDestory(struct CBellhopConfigPara* configParaPtr) {
     vectorfloatDestory(&configParaPtr->digitalPara.RD);
     vectorfloatDestory(&configParaPtr->digitalPara.R);
     vectorfloatDestory(&configParaPtr->digitalPara.angle);
+
+    vectordoubleDestory(&configParaPtr->digitalPara.btyPts);
     free(configParaPtr);
 }
 void cBellhopConfigParaSetTitle(struct CBellhopConfigPara* configParaPtr,
@@ -376,6 +380,24 @@ void cBellhopConfigParaSetISIGNAL(struct CBellhopConfigPara* configParaPtr,
                                   const unsigned int ISIGNAL) {
     configParaPtr->digitalPara.ISIGNAL = ISIGNAL;
 }
+void cBellhopConfigParaSetNbtyPts(struct CBellhopConfigPara* configParaPtr,
+                                  const unsigned int NbtyPts) {
+    configParaPtr->digitalPara.NbtyPts = NbtyPts;
+}
+void cBellhopConfigParaSetbtyPts(struct CBellhopConfigPara* configParaPtr,
+                                 const double* btyPts, const unsigned int len) {
+    if (configParaPtr->digitalPara.btyPts.capacity >= len) {
+        configParaPtr->digitalPara.btyPts.size = len;
+        memcpy(configParaPtr->digitalPara.btyPts.arr, btyPts,
+               sizeof(double) * len);
+    } else {
+        if (configParaPtr->digitalPara.btyPts.capacity != 0) {
+            vectordoubleDestory(&configParaPtr->digitalPara.btyPts);
+        }
+        configParaPtr->digitalPara.btyPts =
+            vectordoubleCreatebyPtr(btyPts, len);
+    }
+}
 //------------------------------------------------------------------------------------------
 // CurveResult类的成员函数
 //------------------------------------------------------------------------------------------
@@ -469,7 +491,9 @@ struct CurveResult* cBellhopRun(
               &cBellhopConfigParaPtr->digitalPara.BSigma,
               &cBellhopConfigParaPtr->digitalPara.TSigma,
               &cBellhopConfigParaPtr->digitalPara.NPts,
-              &cBellhopConfigParaPtr->digitalPara.NBEAMS);
+              &cBellhopConfigParaPtr->digitalPara.NBEAMS,
+              &cBellhopConfigParaPtr->digitalPara.NbtyPts,
+              &cBellhopConfigParaPtr->digitalPara.btyPts);
     return curveResultPtr;
 }
 //------------------------------------------------------------------------------------------

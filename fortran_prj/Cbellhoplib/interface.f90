@@ -412,7 +412,7 @@ contains
       c_zSSPV, c_cSSPV, c_SD, c_RD, c_R, c_alpha,&
       c_zSSPV_len, c_cSSPV_len, c_SD_len, c_NSD, c_RD_len, c_NRD, c_R_len, c_NR, c_alpha_len,&
       c_alphaR, c_betaR, c_rhoR, c_alphaI, c_betaI, c_BSigma, c_TSigma,&
-      c_NPts, c_NBeams) bind(C)
+      c_NPts, c_NBeams, c_NbtyPts, c_btyPts) bind(C)
       USE iso_c_binding
       USE bellMod
       USE RefCoMod
@@ -440,9 +440,9 @@ contains
       type(c_ptr), intent(in) :: c_title
       character, pointer :: f_title(:)
       character, allocatable :: Title(:)
-      type(c_ptr), intent(in) :: c_zSSPV, c_cSSPV, c_SD, c_RD, c_R, c_alpha
+      type(c_ptr), intent(in) :: c_zSSPV, c_cSSPV, c_SD, c_RD, c_R, c_alpha, c_btyPts
       integer(4), intent(in) :: c_zSSPV_len, c_cSSPV_len, c_SD_len, c_RD_len, c_R_len, c_alpha_len, c_title_len,&
-         c_NSD, c_NRD, c_NR
+         c_NSD, c_NRD, c_NR, c_NbtyPts
 
       real(c_double), intent(in) :: c_alphaR, c_betaR, c_rhoR, c_alphaI, c_betaI
       real(c_float), intent(in) :: c_BSigma, c_TSigma
@@ -497,7 +497,7 @@ contains
          c_NSD, c_NRD, c_NR, c_NBeams)
 
       CALL READATI(  TopOpt(5:5), DepthT, rBox, PRTFil )   	! READ AlTImetry
-      CALL READBTY(  BotOpt(2:2), DepthB, rBox, PRTFil )      ! READ BaThYmetrY
+      CALL CREADBTY(  BotOpt(2:2), DepthB, rBox, PRTFil, c_NbtyPts, c_btyPts)      ! READ BaThYmetrY
       CALL READRC(   BotOpt(1:1), TopOpt(2:2),  PRTFil ) 	! READ Reflection Coefficients (top and bottom)
       CALL READPAT( RunType(3:3),               PRTFil )      ! Read Source Beam Pattern
 
@@ -554,7 +554,7 @@ contains
          IF ( SCAN( 'CSI', RunType(1:1) ) /= 0 ) U = 0.0    ! For a TL run, zero out pressure matrix
          IF ( SCAN( 'Aa',  RunType(1:1) ) /= 0 ) NArr = 0   ! For an arrivals run, zero out arrival matrix
 
-         CALL SSP( xs, C, gradc, crr, crz, czz, TopOpt, 'TAB' )
+         CALL CSSP( xs, C, gradc, crr, crz, czz, TopOpt, 'TAB' )
 
          RadMax = 10 * C / freq  ! 10 wavelength max radius
 

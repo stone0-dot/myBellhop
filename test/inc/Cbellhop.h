@@ -3,6 +3,7 @@
 
 INIT_VECTOR_TYPE(char)
 INIT_VECTOR_TYPE(float)
+INIT_VECTOR_TYPE(double)
 
 // fortran接口参数包
 struct FortranConfigPara;
@@ -52,6 +53,8 @@ struct CBellhopDigitalPara {
     int Nimage;
     int Ibwin;
     int ISIGNAL;
+    int NbtyPts;
+    struct Vectordouble btyPts;
 };
 struct CBellhopConfigPara {
     struct CBellhopStringPara stringPara;
@@ -121,6 +124,10 @@ struct CBellhopConfigPara {
                      const unsigned int Ibwin);
     void (*setISIGNAL)(struct CBellhopConfigPara* configParaPtr,
                        const unsigned int ISIGNAL);
+    void (*setNbtyPts)(struct CBellhopConfigPara* configParaPtr,
+                       const unsigned int NbtyPts);
+    void (*setbtyPts)(struct CBellhopConfigPara* configParaPtr,
+                      const double* btyPts, const unsigned int len);
 };
 // 创建Cbellhop参数包
 struct CBellhopConfigPara* cBellhopConfigParaCreate();
@@ -228,6 +235,10 @@ void cBellhopConfigParaSetIbwin(struct CBellhopConfigPara* configParaPtr,
 // 设置ISIGNAL
 void cBellhopConfigParaSetISIGNAL(struct CBellhopConfigPara* configParaPtr,
                                   const unsigned int ISIGNAL);
+void cBellhopConfigParaSetNbtyPts(struct CBellhopConfigPara* configParaPtr,
+                                  const unsigned int NbtyPts);
+void cBellhopConfigParaSetbtyPts(struct CBellhopConfigPara* configParaPtr,
+                                 const double* btyPts, const unsigned int len);
 
 // 返回的声线结果类声明
 struct CurveResult {
