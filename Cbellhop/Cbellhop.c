@@ -6,40 +6,6 @@
 
 #include "interface.h"
 
-struct Complex {
-    double real;
-    double imag;
-};
-struct StringPara {
-    char* title;
-    char* topopt;
-    char* botopt;
-    char* runtype;
-    char* beamtype;
-};
-struct DigitalPara {
-    float freq;
-    int isingl;
-    int nimage;
-    int ibwin;
-    float deltas;
-    int maxn;
-    float zbox;
-    float rbox;
-    float epmult;
-    float rloop;
-    float deptht;
-    struct Complex cpt;
-    double rhot;
-    float depthb;
-    struct Complex cpb;
-    double rhob;
-};
-
-struct FortranConfigPara {
-    struct StringPara stringPara;
-    struct DigitalPara digitalPara;
-};
 //------------------------------------------------------------------------------------------
 // FortranConfigPara类的成员函数
 //------------------------------------------------------------------------------------------
@@ -447,9 +413,14 @@ struct CurveResult* run(struct FortranConfigPara* fortranConfigParaPtr) {
     return curveResultPtr;
 }
 
-struct CurveResult* cBellhopRun(
+struct CBellResult* cBellhopRun(
     struct CBellhopConfigPara* cBellhopConfigParaPtr) {
-    struct CurveResult* curveResultPtr = curveResultCreate();
+    struct CBellResult* cBellResult = cBellResultCreate();
+    cBellResult->energyResultPtr->sizeVector = vectorintCreatebyCapacity(2);
+    vectorintPushback(&cBellResult->energyResultPtr->sizeVector,
+                      cBellhopConfigParaPtr->digitalPara.NRD);
+    vectorintPushback(&cBellResult->energyResultPtr->sizeVector,
+                      cBellhopConfigParaPtr->digitalPara.NR);
     ccaculate(&cBellhopConfigParaPtr->stringPara.title.arr,
               &cBellhopConfigParaPtr->stringPara.title.size,
               &cBellhopConfigParaPtr->digitalPara.freq,
@@ -466,7 +437,8 @@ struct CurveResult* cBellhopRun(
               &cBellhopConfigParaPtr->digitalPara.DepthB,
               cBellhopConfigParaPtr->stringPara.runtype.arr,
               cBellhopConfigParaPtr->stringPara.beamtype.arr,
-              &curveResultPtr->curveLengthArr, &curveResultPtr->curveContain,
+              &cBellResult->curveResultPtr->curveLengthArr,
+              &cBellResult->curveResultPtr->curveContain,
               &cBellhopConfigParaPtr->digitalPara.NMedia,
               &cBellhopConfigParaPtr->digitalPara.zSSPV.arr,
               &cBellhopConfigParaPtr->digitalPara.cSSPV.arr,
@@ -493,8 +465,9 @@ struct CurveResult* cBellhopRun(
               &cBellhopConfigParaPtr->digitalPara.NPts,
               &cBellhopConfigParaPtr->digitalPara.NBEAMS,
               &cBellhopConfigParaPtr->digitalPara.NbtyPts,
-              &cBellhopConfigParaPtr->digitalPara.btyPts);
-    return curveResultPtr;
+              &cBellhopConfigParaPtr->digitalPara.btyPts,
+              &cBellResult->energyResultPtr->arr);
+    return cBellResult;
 }
 //------------------------------------------------------------------------------------------
 // Curve类的成员函数
@@ -521,4 +494,45 @@ struct Point curveIndex(const struct Curve* curvePtr, int idx) {
     struct Point point = {curvePtr->start[idx * 2 + 0],
                           curvePtr->start[idx * 2 + 1]};
     return point;
+}
+//------------------------------------------------------------------------------------------
+// EnergyResult类的成员函数
+//------------------------------------------------------------------------------------------
+struct EnergyResult* energyResultCreate() {
+    struct EnergyResult* energyResultPtr =
+        (struct EnergyResult*)malloc(sizeof(struct EnergyResult));
+    memset(energyResultPtr, 0, sizeof(struct EnergyResult));
+    energyResultPtr->destory = &energyResultDestory;
+    energyResultPtr->size = &energyResultSize;
+    energyResultPtr->index = &energyResultIndex;
+    return energyResultPtr;
+}
+void energyResultDestory(struct EnergyResult* energyResultPtr) {
+    delete_u_1d();
+    vectorintDestory(&energyResultPtr->sizeVector);
+    free(energyResultPtr);
+}
+int energyResultSize(struct EnergyResult* energyResultPtr, unsigned int idx) {
+    return vectorintIndex(&energyResultPtr->sizeVector, idx);
+}
+struct ComplexFloat energyResultIndex(struct EnergyResult* energyResultPtr,
+                                      unsigned int row, unsigned int col) {
+    return energyResultPtr
+        ->arr[col * energyResultPtr->size(energyResultPtr, 0) + row];
+}
+//------------------------------------------------------------------------------------------
+// CBellResult类的成员函数
+//------------------------------------------------------------------------------------------
+struct CBellResult* cBellResultCreate() {
+    struct CBellResult* cBellResultPtr =
+        (struct CBellResult*)malloc(sizeof(struct CBellResult));
+    cBellResultPtr->curveResultPtr = curveResultCreate();
+    cBellResultPtr->energyResultPtr = energyResultCreate();
+    cBellResultPtr->destory = &cBellResultDestory;
+    return cBellResultPtr;
+}
+void cBellResultDestory(struct CBellResult* cBellResultPtr) {
+    cBellResultPtr->curveResultPtr->destory(cBellResultPtr->curveResultPtr);
+    cBellResultPtr->energyResultPtr->destory(cBellResultPtr->energyResultPtr);
+    free(cBellResultPtr);
 }

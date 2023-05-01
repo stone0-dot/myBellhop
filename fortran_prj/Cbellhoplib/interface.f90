@@ -12,6 +12,7 @@ module interface
    real(c_double), target, save :: CPT_real_target, CPT_aimag_target, CPB_real_target, CPB_aimag_target
    type(GrowthDoubleVector), target :: xv_result
    integer(c_int), allocatable, target :: line_length(:)
+   complex, allocatable, target :: U_1D(:)
 contains
    SUBROUTINE to_c_chars(fchars, c_chars)
       USE iso_c_binding, only: c_null_char, c_char
@@ -29,6 +30,12 @@ contains
       end do
       c_chars(n + 1) = c_null_char
    END SUBROUTINE to_c_chars
+   !-----------------------------------------------------------
+   SUBROUTINE delete_U_1D() bind(C)
+      if(allocated(U_1D)) then
+         deallocate(U_1D)
+      end if
+   END SUBROUTINE
    !-----------------------------------------------------------
    SUBROUTINE delete_c_chars() bind(C)
       USE iso_c_binding, only: c_null_char, c_char
@@ -412,7 +419,7 @@ contains
       c_zSSPV, c_cSSPV, c_SD, c_RD, c_R, c_alpha,&
       c_zSSPV_len, c_cSSPV_len, c_SD_len, c_NSD, c_RD_len, c_NRD, c_R_len, c_NR, c_alpha_len,&
       c_alphaR, c_betaR, c_rhoR, c_alphaI, c_betaI, c_BSigma, c_TSigma,&
-      c_NPts, c_NBeams, c_NbtyPts, c_btyPts) bind(C)
+      c_NPts, c_NBeams, c_NbtyPts, c_btyPts, c_U_result) bind(C)
       USE iso_c_binding
       USE bellMod
       USE RefCoMod
@@ -434,7 +441,7 @@ contains
       real(8), allocatable :: xv_1D(:)
       type(c_ptr) :: c_line_length
       ! type(GrowthDoubleVector) :: xv_result
-      type(c_ptr) :: c_xv_result
+      type(c_ptr) :: c_xv_result, c_U_result
       integer i
 
       type(c_ptr), intent(in) :: c_title
@@ -621,11 +628,14 @@ contains
 
          IF ( SCAN( 'CSI', RunType(1:1) ) /= 0 ) THEN   ! TL calculation
             CALL SCALEP( Dalpha, cV( 1 ), R, U, Nrd, Nr, RunType, TopOpt, freq )
-            IRec  = 6 + Nrd * ( IS - 1 )
-            DO I = 1, Nrd
-               IRec = IRec + 1
-               WRITE( SHDFil, REC = IRec ) ( U( I, J ), J = 1, Nr )
-            END DO
+            allocate(U_1D(Nrd * Nr))
+            U_1D = [U(:, :)]
+            c_U_result = c_loc(U_1D(1))
+            ! IRec  = 6 + Nrd * ( IS - 1 )
+            ! DO I = 1, Nrd
+            !    IRec = IRec + 1
+            !    WRITE( SHDFil, REC = IRec ) ( U( I, J ), J = 1, Nr )
+            ! END DO
 
          ELSE IF ( RunType(1:1) == 'A' ) THEN   ! arrivals calculation, ascii
             CALL WRTARRASC( R, Nrd, Nr, TopOpt, freq, RunType(4:4) )

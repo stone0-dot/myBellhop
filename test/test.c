@@ -52,11 +52,13 @@ int main() {
     cBellhopConfigParaPtr->setNbtyPts(cBellhopConfigParaPtr, 3);
     double btyPts[6] = {0, 3000, 5, 3000, 10, 3000};
     cBellhopConfigParaPtr->setbtyPts(cBellhopConfigParaPtr, btyPts, 6);
-    struct CurveResult* curveResultPtr = cBellhopRun(cBellhopConfigParaPtr);
-    int curveNum = curveResultPtr->getCurveNum(curveResultPtr);
+    struct CBellResult* cBellResultPtr = cBellhopRun(cBellhopConfigParaPtr);
+    int curveNum = cBellResultPtr->curveResultPtr->getCurveNum(
+        cBellResultPtr->curveResultPtr);
     printf("The curveResult has total curve num : %d\n", curveNum);
     for (int j = 0; j < curveNum; ++j) {
-        struct Curve* curveObjPtr = curveCreate(curveResultPtr, j);
+        struct Curve* curveObjPtr =
+            curveCreate(cBellResultPtr->curveResultPtr, j);
         int pointNum = curveObjPtr->size(curveObjPtr);
         printf("The poinNum of this curve: %d\n", pointNum);
         for (int i = 0; i < pointNum; ++i) {
@@ -66,6 +68,6 @@ int main() {
         curveObjPtr->destory(curveObjPtr);
     }
     cBellhopConfigParaPtr->destory(cBellhopConfigParaPtr);
-    curveResultPtr->destory(curveResultPtr);
+    cBellResultPtr->destory(cBellResultPtr);
     return 0;
 }

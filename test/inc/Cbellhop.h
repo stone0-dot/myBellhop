@@ -1,12 +1,53 @@
 #pragma once
+#include <stdlib.h>
+#include <string.h>
+
 #include "Vector.h"
 
 INIT_VECTOR_TYPE(char)
 INIT_VECTOR_TYPE(float)
 INIT_VECTOR_TYPE(double)
+INIT_VECTOR_TYPE(int)
+
+struct Complex {
+    double real;
+    double imag;
+};
+struct ComplexFloat {
+    float real;
+    float imag;
+};
+struct StringPara {
+    char* title;
+    char* topopt;
+    char* botopt;
+    char* runtype;
+    char* beamtype;
+};
+struct DigitalPara {
+    float freq;
+    int isingl;
+    int nimage;
+    int ibwin;
+    float deltas;
+    int maxn;
+    float zbox;
+    float rbox;
+    float epmult;
+    float rloop;
+    float deptht;
+    struct Complex cpt;
+    double rhot;
+    float depthb;
+    struct Complex cpb;
+    double rhob;
+};
 
 // fortran接口参数包
-struct FortranConfigPara;
+struct FortranConfigPara {
+    struct StringPara stringPara;
+    struct DigitalPara digitalPara;
+};
 // 创建输入fortran接口参数包
 struct FortranConfigPara* fortranConfigParaCreate();
 // fortran版本的读取参数文件api
@@ -256,7 +297,7 @@ int curveResultGetCurveNum(const struct CurveResult* curveResultPtr);
 // 声线计算api，在配置好参数后调用该函数进行计算
 struct CurveResult* run(struct FortranConfigPara* configParaPtr);
 // cbellhop运行
-struct CurveResult* cBellhopRun(
+struct CBellResult* cBellhopRun(
     struct CBellhopConfigPara* cBellhopConfigParaPtr);
 
 struct Curve {
@@ -278,3 +319,33 @@ struct Point {
 };
 // 输入索引值，返回point(x,y),注:本函数不做运行时检查，自行保证索引值不越界或自行在上层做检查(th<pointNum)
 struct Point curveIndex(const struct Curve* curvePtr, int th);
+
+// EnergyResult能量分布结果类声明
+struct EnergyResult {
+    struct Vectorint sizeVector;
+    struct ComplexFloat* arr;
+    void (*destory)(struct EnergyResult* energyResultPtr);
+    int (*size)(struct EnergyResult* energyResultPtr, unsigned int idx);
+    struct ComplexFloat (*index)(struct EnergyResult* energyResultPtr,
+                                 unsigned int row, unsigned int col);
+};
+// EnergyResult构造函数
+struct EnergyResult* energyResultCreate();
+// EnergyResult析构函数
+void energyResultDestory(struct EnergyResult* energyResultPtr);
+// 返回能量矩阵的size
+int energyResultSize(struct EnergyResult* energyResultPtr, unsigned int idx);
+// 索引获取能量返回值，类型为ComplexFloat
+struct ComplexFloat energyResultIndex(struct EnergyResult* energyResultPtr,
+                                      unsigned int row, unsigned int col);
+
+// CBellResult类声明
+struct CBellResult {
+    struct CurveResult* curveResultPtr;
+    struct EnergyResult* energyResultPtr;
+    void (*destory)(struct CBellResult* cBellResultPtr);
+};
+// CbellResult构造函数
+struct CBellResult* cBellResultCreate();
+// CbellResult析构函数
+void cBellResultDestory(struct CBellResult* cBellResultPtr);
