@@ -94,13 +94,13 @@ CONTAINS
          alpha = 0.0
       ENDIF
       allocate(nArr_1D(Nrd * Nr))
-      allocate(ampArr_1D(Nrd * Nr * 6))
-      allocate(phaseArr_1D(Nrd * Nr * 6))
-      allocate(delayArr_1D(Nrd * Nr * 6))
-      allocate(srcAngleArr_1D(Nrd * Nr * 6))
-      allocate(recvAngleArr_1D(Nrd * Nr * 6))
-      allocate(nTopBncArr_1D(Nrd * Nr * 6))
-      allocate(nBotBncArr_1D(Nrd * Nr * 6))
+      allocate(ampArr_1D(Nrd * Nr * MAXVAL( NArr( 1:Nrd, 1:Nr ) )))
+      allocate(phaseArr_1D(Nrd * Nr * MAXVAL( NArr( 1:Nrd, 1:Nr ) )))
+      allocate(delayArr_1D(Nrd * Nr * MAXVAL( NArr( 1:Nrd, 1:Nr ) )))
+      allocate(srcAngleArr_1D(Nrd * Nr * MAXVAL( NArr( 1:Nrd, 1:Nr ) )))
+      allocate(recvAngleArr_1D(Nrd * Nr * MAXVAL( NArr( 1:Nrd, 1:Nr ) )))
+      allocate(nTopBncArr_1D(Nrd * Nr * MAXVAL( NArr( 1:Nrd, 1:Nr ) )))
+      allocate(nBotBncArr_1D(Nrd * Nr * MAXVAL( NArr( 1:Nrd, 1:Nr ) )))
       nArr_1D_idx = 1
       AArr_1D_idx = 1
       DO id = 1, Nrd

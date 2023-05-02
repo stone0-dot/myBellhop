@@ -41,7 +41,7 @@ int main() {
     float R[2] = {0, 150};
     cBellhopConfigParaPtr->setR(cBellhopConfigParaPtr, R, 2);
     cBellhopConfigParaPtr->setNR(cBellhopConfigParaPtr, 10);
-    cBellhopConfigParaPtr->setRuntype(cBellhopConfigParaPtr, "AG R");
+    cBellhopConfigParaPtr->setRuntype(cBellhopConfigParaPtr, "CG R");
     cBellhopConfigParaPtr->setNBEAMS(cBellhopConfigParaPtr, 10);
     float angle[2] = {-5, 1};
     cBellhopConfigParaPtr->setangle(cBellhopConfigParaPtr, angle, 2);
