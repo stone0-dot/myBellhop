@@ -41,7 +41,7 @@ int main() {
     float R[2] = {0, 150};
     cBellhopConfigParaPtr->setR(cBellhopConfigParaPtr, R, 2);
     cBellhopConfigParaPtr->setNR(cBellhopConfigParaPtr, 10);
-    cBellhopConfigParaPtr->setRuntype(cBellhopConfigParaPtr, "RG R");
+    cBellhopConfigParaPtr->setRuntype(cBellhopConfigParaPtr, "AG R");
     cBellhopConfigParaPtr->setNBEAMS(cBellhopConfigParaPtr, 10);
     float angle[2] = {-5, 1};
     cBellhopConfigParaPtr->setangle(cBellhopConfigParaPtr, angle, 2);
@@ -66,6 +66,44 @@ int main() {
             printf("%lf %lf\n", point.x, point.y);
         }
         curveObjPtr->destory(curveObjPtr);
+    }
+    int row = cBellResultPtr->energyResultPtr->size(
+        cBellResultPtr->energyResultPtr, 0);
+    int col = cBellResultPtr->energyResultPtr->size(
+        cBellResultPtr->energyResultPtr, 1);
+    for (int i = 0; i < row; ++i) {
+        for (int j = 0; j < col; ++j) {
+            struct ComplexFloat ele = cBellResultPtr->energyResultPtr->index(
+                cBellResultPtr->energyResultPtr, i, j);
+            printf("(%f, %f) ", ele.real, ele.imag);
+        }
+        printf("\n");
+    }
+    int arrRow =
+        cBellResultPtr->arrResultPtr->size(cBellResultPtr->arrResultPtr, 0);
+    int arrCol =
+        cBellResultPtr->arrResultPtr->size(cBellResultPtr->arrResultPtr, 1);
+    for (int i = 0; i < arrRow; ++i) {
+        for (int j = 0; j < arrCol; ++j) {
+            struct ArrResultReceiver* receverPtr =
+                cBellResultPtr->arrResultPtr->receiverCreate(
+                    cBellResultPtr->arrResultPtr, i, j);
+            int curveNum = receverPtr->getCurveNum(receverPtr);
+            printf("%d\n", curveNum);
+            for (int k = 0; k < curveNum; ++k) {
+                float amp = receverPtr->ampIndex(receverPtr, k);
+                float phase = receverPtr->phaseIndex(receverPtr, k);
+                float delay = receverPtr->delayIndex(receverPtr, k);
+                float srcAngle = receverPtr->srcAngleIndex(receverPtr, k);
+                float recvAngle = receverPtr->recvAngleIndex(receverPtr, k);
+                int nTopBnc = receverPtr->nTopBncIndex(receverPtr, k);
+                int nBotBnc = receverPtr->nBotBncIndex(receverPtr, k);
+                printf("%f %f %f %f %f %d %d\n", amp, phase, delay, srcAngle,
+                       recvAngle, nTopBnc, nBotBnc);
+            }
+            receverPtr->destory(receverPtr);
+        }
+        printf("\n");
     }
     cBellhopConfigParaPtr->destory(cBellhopConfigParaPtr);
     cBellResultPtr->destory(cBellResultPtr);

@@ -13,6 +13,9 @@ module interface
    type(GrowthDoubleVector), target :: xv_result
    integer(c_int), allocatable, target :: line_length(:)
    complex, allocatable, target :: U_1D(:)
+   integer(c_int), allocatable, target :: nArr_1D(:), nTopBncArr_1D(:), nBotBncArr_1D(:)
+   real(c_float), allocatable, target :: ampArr_1D(:), phaseArr_1D(:), delayArr_1D(:), srcAngleArr_1D(:),&
+      recvAngleArr_1D(:)
 contains
    SUBROUTINE to_c_chars(fchars, c_chars)
       USE iso_c_binding, only: c_null_char, c_char
@@ -411,6 +414,34 @@ contains
       WRITE( PRTFIL, "( /, ' CPU Time = ', G15.3 )" ) Tstop - Tstart
    END SUBROUTINE caculate
 !*******************************************************************************!
+   SUBROUTINE delete_arr_result() bind(C)
+      IMPLICIT NONE
+      if(allocated(nArr_1D)) then
+         deallocate(nArr_1D)
+      end if
+      if(allocated(ampArr_1D)) then
+         deallocate(ampArr_1D)
+      end if
+      if(allocated(phaseArr_1D)) then
+         deallocate(phaseArr_1D)
+      end if
+      if(allocated(delayArr_1D)) then
+         deallocate(delayArr_1D)
+      end if
+      if(allocated(srcAngleArr_1D)) then
+         deallocate(srcAngleArr_1D)
+      end if
+      if(allocated(recvAngleArr_1D)) then
+         deallocate(recvAngleArr_1D)
+      end if
+      if(allocated(nTopBncArr_1D)) then
+         deallocate(nTopBncArr_1D)
+      end if
+      if(allocated(nBotBncArr_1D)) then
+         deallocate(nBotBncArr_1D)
+      end if
+   END SUBROUTINE delete_arr_result
+!*******************************************************************************!
    SUBROUTINE Ccaculate(c_title, c_title_len, &
       c_freq, c_ISINGL, c_NIMAGE, c_IBWIN, c_deltas, c_zBox, c_rBox, &
       c_EPMULT, c_RLOOP,c_TopOpt, &
@@ -419,7 +450,10 @@ contains
       c_zSSPV, c_cSSPV, c_SD, c_RD, c_R, c_alpha,&
       c_zSSPV_len, c_cSSPV_len, c_SD_len, c_NSD, c_RD_len, c_NRD, c_R_len, c_NR, c_alpha_len,&
       c_alphaR, c_betaR, c_rhoR, c_alphaI, c_betaI, c_BSigma, c_TSigma,&
-      c_NPts, c_NBeams, c_NbtyPts, c_btyPts, c_U_result) bind(C)
+      c_NPts, c_NBeams, c_NbtyPts, c_btyPts, c_U_result, c_U_row, c_U_col,&
+      c_nArr_1D, c_ampArr_1D, c_phaseArr_1D, c_delayArr_1D, c_srcAngleArr_1D,&
+      c_recvAngleArr_1D, c_nTopBncArr_1D, c_nBotBncArr_1D,&
+      c_arr_row, c_arr_col) bind(C)
       USE iso_c_binding
       USE bellMod
       USE RefCoMod
@@ -442,6 +476,9 @@ contains
       type(c_ptr) :: c_line_length
       ! type(GrowthDoubleVector) :: xv_result
       type(c_ptr) :: c_xv_result, c_U_result
+      type(c_ptr) :: c_nArr_1D, c_ampArr_1D, c_phaseArr_1D, c_delayArr_1D, c_srcAngleArr_1D,&
+         c_recvAngleArr_1D, c_nTopBncArr_1D, c_nBotBncArr_1D
+      integer(c_int) :: c_arr_row, c_arr_col
       integer i
 
       type(c_ptr), intent(in) :: c_title
@@ -457,6 +494,7 @@ contains
       real(4) :: f_BSigma, f_TSigma
       integer(c_int), intent(in) :: c_NPts, c_NBeams
       integer(4) :: NMedia, f_NPts
+      integer(c_int) :: c_U_row, c_U_col
 
       call c_f_pointer(c_title, f_title, [c_title_len])
       allocate(Title(c_title_len))
@@ -575,9 +613,19 @@ contains
          ENDIF
 
          ! *** Trace successive beams ***
-         allocate(line_length(NBeams + 1))
-         line_length(1) = NBeams
-         xv_result = create_growth_double_vector(50000)
+         IF ( RunType(1:1) == 'R' ) THEN
+            allocate(line_length(NBeams + 1))
+            line_length(1) = NBeams
+            xv_result = create_growth_double_vector(50000)
+            c_U_row = 0
+            c_U_col = 0
+            c_arr_row = 0
+            c_arr_col = 0
+         else
+            allocate(line_length(1))
+            line_length(1) = 0
+            xv_result = create_growth_double_vector(1)
+         end if
          DO ibeam = 1, NBeams
 
 
@@ -629,8 +677,12 @@ contains
          IF ( SCAN( 'CSI', RunType(1:1) ) /= 0 ) THEN   ! TL calculation
             CALL SCALEP( Dalpha, cV( 1 ), R, U, Nrd, Nr, RunType, TopOpt, freq )
             allocate(U_1D(Nrd * Nr))
-            U_1D = [U(:, :)]
+            U_1D(:) = [U(:, :)]
             c_U_result = c_loc(U_1D(1))
+            c_U_row = Nrd
+            c_U_col = Nr
+            c_arr_row = 0
+            c_arr_col = 0
             ! IRec  = 6 + Nrd * ( IS - 1 )
             ! DO I = 1, Nrd
             !    IRec = IRec + 1
@@ -638,8 +690,24 @@ contains
             ! END DO
 
          ELSE IF ( RunType(1:1) == 'A' ) THEN   ! arrivals calculation, ascii
-            CALL WRTARRASC( R, Nrd, Nr, TopOpt, freq, RunType(4:4) )
+            c_U_row = 0
+            c_U_col = 0
+            CALL CWRTARRASC( R, Nrd, Nr, TopOpt, freq, RunType(4:4), nArr_1D,&
+               ampArr_1D, phaseArr_1D, delayArr_1D, srcAngleArr_1D, recvAngleArr_1D,&
+               nTopBncArr_1D, nBotBncArr_1D)
+            c_arr_row = Nrd
+            c_arr_col = Nr
+            c_nArr_1D = c_loc(nArr_1D(1))
+            c_ampArr_1D = c_loc(ampArr_1D(1))
+            c_phaseArr_1D = c_loc(phaseArr_1D(1))
+            c_delayArr_1D = c_loc(delayArr_1D(1))
+            c_srcAngleArr_1D = c_loc(srcAngleArr_1D(1))
+            c_recvAngleArr_1D = c_loc(recvAngleArr_1D(1))
+            c_nTopBncArr_1D = c_loc(nTopBncArr_1D(1))
+            c_nBotBncArr_1D = c_loc(nBotBncArr_1D(1))
          ELSE IF ( RunType(1:1) == 'a' ) THEN   ! arrivals calculation, binary
+            c_U_row = 0
+            c_U_col = 0
             CALL WRTARRBIN( R, Nrd, Nr, TopOpt, freq, RunType(4:4) )
          END IF
 

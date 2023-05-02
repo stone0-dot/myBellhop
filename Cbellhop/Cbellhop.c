@@ -415,12 +415,7 @@ struct CurveResult* run(struct FortranConfigPara* fortranConfigParaPtr) {
 
 struct CBellResult* cBellhopRun(
     struct CBellhopConfigPara* cBellhopConfigParaPtr) {
-    struct CBellResult* cBellResult = cBellResultCreate();
-    cBellResult->energyResultPtr->sizeVector = vectorintCreatebyCapacity(2);
-    vectorintPushback(&cBellResult->energyResultPtr->sizeVector,
-                      cBellhopConfigParaPtr->digitalPara.NRD);
-    vectorintPushback(&cBellResult->energyResultPtr->sizeVector,
-                      cBellhopConfigParaPtr->digitalPara.NR);
+    struct CBellResult* cBellResultPtr = cBellResultCreate();
     ccaculate(&cBellhopConfigParaPtr->stringPara.title.arr,
               &cBellhopConfigParaPtr->stringPara.title.size,
               &cBellhopConfigParaPtr->digitalPara.freq,
@@ -437,8 +432,8 @@ struct CBellResult* cBellhopRun(
               &cBellhopConfigParaPtr->digitalPara.DepthB,
               cBellhopConfigParaPtr->stringPara.runtype.arr,
               cBellhopConfigParaPtr->stringPara.beamtype.arr,
-              &cBellResult->curveResultPtr->curveLengthArr,
-              &cBellResult->curveResultPtr->curveContain,
+              &cBellResultPtr->curveResultPtr->curveLengthArr,
+              &cBellResultPtr->curveResultPtr->curveContain,
               &cBellhopConfigParaPtr->digitalPara.NMedia,
               &cBellhopConfigParaPtr->digitalPara.zSSPV.arr,
               &cBellhopConfigParaPtr->digitalPara.cSSPV.arr,
@@ -466,8 +461,20 @@ struct CBellResult* cBellhopRun(
               &cBellhopConfigParaPtr->digitalPara.NBEAMS,
               &cBellhopConfigParaPtr->digitalPara.NbtyPts,
               &cBellhopConfigParaPtr->digitalPara.btyPts,
-              &cBellResult->energyResultPtr->arr);
-    return cBellResult;
+              &cBellResultPtr->energyResultPtr->arr,
+              &cBellResultPtr->energyResultPtr->sizeVector.arr[0],
+              &cBellResultPtr->energyResultPtr->sizeVector.arr[1],
+              &cBellResultPtr->arrResultPtr->nArr,
+              &cBellResultPtr->arrResultPtr->ampArr,
+              &cBellResultPtr->arrResultPtr->phaseArr,
+              &cBellResultPtr->arrResultPtr->delayArr,
+              &cBellResultPtr->arrResultPtr->srcAngleArr,
+              &cBellResultPtr->arrResultPtr->recvAngleArr,
+              &cBellResultPtr->arrResultPtr->nTopBncArr,
+              &cBellResultPtr->arrResultPtr->nBotBncArr,
+              &cBellResultPtr->arrResultPtr->sizeVector.arr[0],
+              &cBellResultPtr->arrResultPtr->sizeVector.arr[1]);
+    return cBellResultPtr;
 }
 //------------------------------------------------------------------------------------------
 // Curve类的成员函数
@@ -502,6 +509,9 @@ struct EnergyResult* energyResultCreate() {
     struct EnergyResult* energyResultPtr =
         (struct EnergyResult*)malloc(sizeof(struct EnergyResult));
     memset(energyResultPtr, 0, sizeof(struct EnergyResult));
+    energyResultPtr->sizeVector = vectorintCreatebyCapacity(2);
+    vectorintPushback(&energyResultPtr->sizeVector, 0);
+    vectorintPushback(&energyResultPtr->sizeVector, 0);
     energyResultPtr->destory = &energyResultDestory;
     energyResultPtr->size = &energyResultSize;
     energyResultPtr->index = &energyResultIndex;
@@ -521,6 +531,122 @@ struct ComplexFloat energyResultIndex(struct EnergyResult* energyResultPtr,
         ->arr[col * energyResultPtr->size(energyResultPtr, 0) + row];
 }
 //------------------------------------------------------------------------------------------
+// ArrResult类的成员函数
+//------------------------------------------------------------------------------------------
+struct ArrResult* arrResultCreate() {
+    struct ArrResult* arrResultPtr =
+        (struct ArrResult*)malloc(sizeof(struct ArrResult));
+    memset(arrResultPtr, 0, sizeof(struct ArrResult));
+    arrResultPtr->sizeVector = vectorintCreatebyCapacity(2);
+    vectorintPushback(&arrResultPtr->sizeVector, 0);
+    vectorintPushback(&arrResultPtr->sizeVector, 0);
+    arrResultPtr->destory = &arrResultDestory;
+    arrResultPtr->size = &arrResultSize;
+    arrResultPtr->receiverCreate = &ArrResultReceiverCreate;
+    return arrResultPtr;
+}
+void arrResultDestory(struct ArrResult* arrResultPtr) {
+    vectorintDestory(&arrResultPtr->sizeVector);
+    delete_arr_result();
+    free(arrResultPtr);
+}
+int arrResultSize(const struct ArrResult* arrResultPtr, unsigned int idx) {
+    return vectorintIndex(&arrResultPtr->sizeVector, idx);
+}
+struct ArrResultReceiver* ArrResultReceiverCreate(
+    const struct ArrResult* arrResultPtr, unsigned int row, unsigned int col) {
+    struct ArrResultReceiver* arrResultReceiverPtr =
+        (struct ArrResultReceiver*)malloc(sizeof(struct ArrResultReceiver));
+    memset(arrResultReceiverPtr, 0, sizeof(struct ArrResultReceiver));
+    arrResultReceiverPtr->curveNum =
+        arrResultPtr
+            ->nArr[row * vectorintIndex(&arrResultPtr->sizeVector, 1) + col];
+    arrResultReceiverPtr->ampArr = arrResultPtr->ampArr;
+    arrResultReceiverPtr->phaseArr = arrResultPtr->phaseArr;
+    arrResultReceiverPtr->delayArr = arrResultPtr->delayArr;
+    arrResultReceiverPtr->srcAngleArr = arrResultPtr->srcAngleArr;
+    arrResultReceiverPtr->recvAngleArr = arrResultPtr->recvAngleArr;
+    arrResultReceiverPtr->nTopBncArr = arrResultPtr->nTopBncArr;
+    arrResultReceiverPtr->nBotBncArr = arrResultPtr->nBotBncArr;
+    for (int i = 0; i <= row; ++i) {
+        for (int j = 0; j < col; ++j) {
+            arrResultReceiverPtr->ampArr +=
+                arrResultPtr
+                    ->nArr[i * vectorintIndex(&arrResultPtr->sizeVector, 1) +
+                           j];
+            arrResultReceiverPtr->phaseArr +=
+                arrResultPtr
+                    ->nArr[i * vectorintIndex(&arrResultPtr->sizeVector, 1) +
+                           j];
+            arrResultReceiverPtr->delayArr +=
+                arrResultPtr
+                    ->nArr[i * vectorintIndex(&arrResultPtr->sizeVector, 1) +
+                           j];
+            arrResultReceiverPtr->srcAngleArr +=
+                arrResultPtr
+                    ->nArr[i * vectorintIndex(&arrResultPtr->sizeVector, 1) +
+                           j];
+            arrResultReceiverPtr->recvAngleArr +=
+                arrResultPtr
+                    ->nArr[i * vectorintIndex(&arrResultPtr->sizeVector, 1) +
+                           j];
+            arrResultReceiverPtr->nTopBncArr +=
+                arrResultPtr
+                    ->nArr[i * vectorintIndex(&arrResultPtr->sizeVector, 1) +
+                           j];
+            arrResultReceiverPtr->nBotBncArr +=
+                arrResultPtr
+                    ->nArr[i * vectorintIndex(&arrResultPtr->sizeVector, 1) +
+                           j];
+        }
+    }
+    arrResultReceiverPtr->destory = &ArrResultReceiverDestory;
+    arrResultReceiverPtr->getCurveNum = &arrResultReceiverGetCurveNum;
+    arrResultReceiverPtr->ampIndex = &arrResultReceiverAmpIndex;
+    arrResultReceiverPtr->phaseIndex = &arrResultReceiverPhaseIndex;
+    arrResultReceiverPtr->delayIndex = &arrResultReceiverDelayIndex;
+    arrResultReceiverPtr->srcAngleIndex = &arrResultReceiverSrcAngleIndex;
+    arrResultReceiverPtr->recvAngleIndex = &arrResultReceiverRecvAngleIndex;
+    arrResultReceiverPtr->nTopBncIndex = &arrResultReceiverNTopBncIndex;
+    arrResultReceiverPtr->nBotBncIndex = &arrResultReceiverNBotBncIndex;
+    return arrResultReceiverPtr;
+}
+void ArrResultReceiverDestory(struct ArrResultReceiver* arrResultReceiverPtr) {
+    free(arrResultReceiverPtr);
+}
+int arrResultReceiverGetCurveNum(
+    const struct ArrResultReceiver* arrResultReceiverPtr) {
+    return arrResultReceiverPtr->curveNum;
+}
+float arrResultReceiverAmpIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx) {
+    return arrResultReceiverPtr->ampArr[idx];
+}
+float arrResultReceiverPhaseIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx) {
+    return arrResultReceiverPtr->phaseArr[idx];
+}
+float arrResultReceiverDelayIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx) {
+    return arrResultReceiverPtr->delayArr[idx];
+}
+float arrResultReceiverSrcAngleIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx) {
+    return arrResultReceiverPtr->srcAngleArr[idx];
+}
+float arrResultReceiverRecvAngleIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx) {
+    return arrResultReceiverPtr->recvAngleArr[idx];
+}
+int arrResultReceiverNTopBncIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx) {
+    return arrResultReceiverPtr->nTopBncArr[idx];
+}
+int arrResultReceiverNBotBncIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx) {
+    return arrResultReceiverPtr->nBotBncArr[idx];
+}
+//------------------------------------------------------------------------------------------
 // CBellResult类的成员函数
 //------------------------------------------------------------------------------------------
 struct CBellResult* cBellResultCreate() {
@@ -528,11 +654,13 @@ struct CBellResult* cBellResultCreate() {
         (struct CBellResult*)malloc(sizeof(struct CBellResult));
     cBellResultPtr->curveResultPtr = curveResultCreate();
     cBellResultPtr->energyResultPtr = energyResultCreate();
+    cBellResultPtr->arrResultPtr = arrResultCreate();
     cBellResultPtr->destory = &cBellResultDestory;
     return cBellResultPtr;
 }
 void cBellResultDestory(struct CBellResult* cBellResultPtr) {
     cBellResultPtr->curveResultPtr->destory(cBellResultPtr->curveResultPtr);
     cBellResultPtr->energyResultPtr->destory(cBellResultPtr->energyResultPtr);
+    cBellResultPtr->arrResultPtr->destory(cBellResultPtr->arrResultPtr);
     free(cBellResultPtr);
 }

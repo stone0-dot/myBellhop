@@ -339,10 +339,91 @@ int energyResultSize(struct EnergyResult* energyResultPtr, unsigned int idx);
 struct ComplexFloat energyResultIndex(struct EnergyResult* energyResultPtr,
                                       unsigned int row, unsigned int col);
 
+// ArrResult声线描述结果类声明
+struct ArrResult {
+    struct Vectorint sizeVector;
+    int* nArr;
+    float* ampArr;
+    float* phaseArr;
+    float* delayArr;
+    float* srcAngleArr;
+    float* recvAngleArr;
+    int* nTopBncArr;
+    int* nBotBncArr;
+    void (*destory)(struct ArrResult* arrResultPtr);
+    int (*size)(const struct ArrResult* arrResultPtr, unsigned int idx);
+    struct ArrResultReceiver* (*receiverCreate)(
+        const struct ArrResult* arrResultPtr, unsigned int row,
+        unsigned int col);
+};
+// ArrResult构造函数
+struct ArrResult* arrResultCreate();
+// ArrResult析构函数
+void arrResultDestory(struct ArrResult* arrResultPtr);
+// 获取ArrResult的size
+int arrResultSize(const struct ArrResult* arrResultPtr, unsigned int idx);
+// ArrResultReceiver接收源类声明
+struct ArrResultReceiver {
+    int curveNum;
+    float* ampArr;
+    float* phaseArr;
+    float* delayArr;
+    float* srcAngleArr;
+    float* recvAngleArr;
+    int* nTopBncArr;
+    int* nBotBncArr;
+    void (*destory)(struct ArrResultReceiver* arrResultReceiverPtr);
+    int (*getCurveNum)(const struct ArrResultReceiver* arrResultReceiverPtr);
+    float (*ampIndex)(const struct ArrResultReceiver* arrResultReceiverPtr,
+                      unsigned int idx);
+    float (*phaseIndex)(const struct ArrResultReceiver* arrResultReceiverPtr,
+                        unsigned int idx);
+    float (*delayIndex)(const struct ArrResultReceiver* arrResultReceiverPtr,
+                        unsigned int idx);
+    float (*srcAngleIndex)(const struct ArrResultReceiver* arrResultReceiverPtr,
+                           unsigned int idx);
+    float (*recvAngleIndex)(
+        const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+    int (*nTopBncIndex)(const struct ArrResultReceiver* arrResultReceiverPtr,
+                        unsigned int idx);
+    int (*nBotBncIndex)(const struct ArrResultReceiver* arrResultReceiverPtr,
+                        unsigned int idx);
+};
+// ArrResultReceiver构造函数
+struct ArrResultReceiver* ArrResultReceiverCreate(
+    const struct ArrResult* arrResultPtr, unsigned int row, unsigned int col);
+// ArrResultReceiver析构函数
+void ArrResultReceiverDestory(struct ArrResultReceiver* arrResultReceiverPtr);
+// 获取接受源接收到的声线数量
+int arrResultReceiverGetCurveNum(
+    const struct ArrResultReceiver* arrResultReceiverPtr);
+// ArrResultReceiver获取第idx条声线的幅度
+float arrResultReceiverAmpIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+// ArrResultReceiver获取第idx条声线的相位
+float arrResultReceiverPhaseIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+// ArrResultReceiver获取第idx条声线的时延
+float arrResultReceiverDelayIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+// ArrResultReceiver获取第idx条声线的出射角
+float arrResultReceiverSrcAngleIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+// ArrResultReceiver获取第idx条声线的接收角
+float arrResultReceiverRecvAngleIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+// ArrResultReceiver获取第idx条声线的海面反射次数
+int arrResultReceiverNTopBncIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+// ArrResultReceiver获取第idx条声线的海底反射次数
+int arrResultReceiverNBotBncIndex(
+    const struct ArrResultReceiver* arrResultReceiverPtr, unsigned int idx);
+
 // CBellResult类声明
 struct CBellResult {
     struct CurveResult* curveResultPtr;
     struct EnergyResult* energyResultPtr;
+    struct ArrResult* arrResultPtr;
     void (*destory)(struct CBellResult* cBellResultPtr);
 };
 // CbellResult构造函数

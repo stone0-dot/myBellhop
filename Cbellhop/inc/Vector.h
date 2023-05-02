@@ -14,6 +14,7 @@
         const unsigned int capacity) {                                         \
         struct Vector##type vector = {NULL, 0, 0};                             \
         vector.arr = (type*)malloc(sizeof(type) * capacity);                   \
+        memset(vector.arr, 0, sizeof(type) * capacity);                        \
         vector.capacity = capacity;                                            \
         return vector;                                                         \
     }                                                                          \
@@ -94,6 +95,7 @@
         const unsigned int capacity) {                                         \
         struct Vector##type vector = {NULL, 0, 0};                             \
         vector.arr = (type*)malloc(sizeof(type) * capacity);                   \
+        memset(vector.arr, 0, sizeof(type) * capacity);                        \
         vector.capacity = capacity;                                            \
         return vector;                                                         \
     }                                                                          \
