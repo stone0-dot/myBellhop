@@ -41,7 +41,7 @@ int main() {
     float R[2] = {0, 150};
     cBellhopConfigParaPtr->setR(cBellhopConfigParaPtr, R, 2);
     cBellhopConfigParaPtr->setNR(cBellhopConfigParaPtr, 10);
-    cBellhopConfigParaPtr->setRuntype(cBellhopConfigParaPtr, "CG R");
+    cBellhopConfigParaPtr->setRuntype(cBellhopConfigParaPtr, "AG R");
     cBellhopConfigParaPtr->setNBEAMS(cBellhopConfigParaPtr, 10);
     float angle[2] = {-5, 1};
     cBellhopConfigParaPtr->setangle(cBellhopConfigParaPtr, angle, 2);
@@ -107,5 +107,94 @@ int main() {
     }
     cBellhopConfigParaPtr->destory(cBellhopConfigParaPtr);
     cBellResultPtr->destory(cBellResultPtr);
+
+    struct CBellhopConfigPara* cBellhopConfigParaPtr2 =
+        cBellhopConfigParaCreate();
+    cBellhopConfigParaPtr2->setTitle(cBellhopConfigParaPtr2, "title");
+    cBellhopConfigParaPtr2->setFreq(cBellhopConfigParaPtr2, 100);
+    cBellhopConfigParaPtr2->setNMedia(cBellhopConfigParaPtr2, 1);
+    cBellhopConfigParaPtr2->setTopopt(cBellhopConfigParaPtr2, "CVW  ");
+    cBellhopConfigParaPtr2->setNPts(cBellhopConfigParaPtr2, 0);
+    cBellhopConfigParaPtr2->setTSigma(cBellhopConfigParaPtr2, 0);
+    cBellhopConfigParaPtr2->setDepthB(cBellhopConfigParaPtr2, 318.127);
+    cBellhopConfigParaPtr2->setzSSPV(cBellhopConfigParaPtr2, zSSPV, 29);
+    cBellhopConfigParaPtr2->setcSSPV(cBellhopConfigParaPtr2, cSSPV, 29);
+    cBellhopConfigParaPtr2->setBotopt(cBellhopConfigParaPtr2, "A* ");
+    cBellhopConfigParaPtr2->setBSigma(cBellhopConfigParaPtr2, 0);
+    cBellhopConfigParaPtr2->setalphaR(cBellhopConfigParaPtr2, 2000);
+    cBellhopConfigParaPtr2->setbetaR(cBellhopConfigParaPtr2, 450);
+    cBellhopConfigParaPtr2->setrhoR(cBellhopConfigParaPtr2, 1.9);
+    cBellhopConfigParaPtr2->setalphaI(cBellhopConfigParaPtr2, 0.4);
+    cBellhopConfigParaPtr2->setbetaI(cBellhopConfigParaPtr2, 0.225);
+    cBellhopConfigParaPtr2->setSD(cBellhopConfigParaPtr2, SD, 1);
+    cBellhopConfigParaPtr2->setNSD(cBellhopConfigParaPtr2, 1);
+    cBellhopConfigParaPtr2->setRD(cBellhopConfigParaPtr2, RD, 2);
+    cBellhopConfigParaPtr2->setNRD(cBellhopConfigParaPtr2, 20);
+    cBellhopConfigParaPtr2->setR(cBellhopConfigParaPtr2, R, 2);
+    cBellhopConfigParaPtr2->setNR(cBellhopConfigParaPtr2, 10);
+    cBellhopConfigParaPtr2->setRuntype(cBellhopConfigParaPtr2, "CG R");
+    cBellhopConfigParaPtr2->setNBEAMS(cBellhopConfigParaPtr2, 10);
+    cBellhopConfigParaPtr2->setangle(cBellhopConfigParaPtr2, angle, 2);
+    cBellhopConfigParaPtr2->setdeltas(cBellhopConfigParaPtr2, 0);
+    cBellhopConfigParaPtr2->setzBox(cBellhopConfigParaPtr2, 368.127);
+    cBellhopConfigParaPtr2->setrBox(cBellhopConfigParaPtr2, 101);
+    cBellhopConfigParaPtr2->setBeamtype(cBellhopConfigParaPtr2, "MS ");
+    cBellhopConfigParaPtr2->setNbtyPts(cBellhopConfigParaPtr2, 3);
+    cBellhopConfigParaPtr2->setbtyPts(cBellhopConfigParaPtr2, btyPts, 6);
+    struct CBellResult* cBellResultPtr2 = cBellhopRun(cBellhopConfigParaPtr2);
+    int curveNum2 = cBellResultPtr2->curveResultPtr->getCurveNum(
+        cBellResultPtr2->curveResultPtr);
+    printf("The curveResult has total curve num : %d\n", curveNum);
+    for (int j = 0; j < curveNum; ++j) {
+        struct Curve* curveObjPtr =
+            curveCreate(cBellResultPtr2->curveResultPtr, j);
+        int pointNum = curveObjPtr->size(curveObjPtr);
+        printf("The poinNum of this curve: %d\n", pointNum);
+        for (int i = 0; i < pointNum; ++i) {
+            struct Point point = curveObjPtr->index(curveObjPtr, i);
+            printf("%lf %lf\n", point.x, point.y);
+        }
+        curveObjPtr->destory(curveObjPtr);
+    }
+    int row2 = cBellResultPtr2->energyResultPtr->size(
+        cBellResultPtr2->energyResultPtr, 0);
+    int col2 = cBellResultPtr2->energyResultPtr->size(
+        cBellResultPtr2->energyResultPtr, 1);
+    for (int i = 0; i < row2; ++i) {
+        for (int j = 0; j < col2; ++j) {
+            struct ComplexFloat ele = cBellResultPtr2->energyResultPtr->index(
+                cBellResultPtr2->energyResultPtr, i, j);
+            printf("(%f, %f) ", ele.real, ele.imag);
+        }
+        printf("\n");
+    }
+    int arrRow2 =
+        cBellResultPtr2->arrResultPtr->size(cBellResultPtr2->arrResultPtr, 0);
+    int arrCol2 =
+        cBellResultPtr2->arrResultPtr->size(cBellResultPtr2->arrResultPtr, 1);
+    for (int i = 0; i < arrRow2; ++i) {
+        for (int j = 0; j < arrCol2; ++j) {
+            struct ArrResultReceiver* receverPtr =
+                cBellResultPtr2->arrResultPtr->receiverCreate(
+                    cBellResultPtr2->arrResultPtr, i, j);
+            int curveNum = receverPtr->getCurveNum(receverPtr);
+            printf("%d\n", curveNum);
+            for (int k = 0; k < curveNum; ++k) {
+                float amp = receverPtr->ampIndex(receverPtr, k);
+                float phase = receverPtr->phaseIndex(receverPtr, k);
+                float delay = receverPtr->delayIndex(receverPtr, k);
+                float srcAngle = receverPtr->srcAngleIndex(receverPtr, k);
+                float recvAngle = receverPtr->recvAngleIndex(receverPtr, k);
+                int nTopBnc = receverPtr->nTopBncIndex(receverPtr, k);
+                int nBotBnc = receverPtr->nBotBncIndex(receverPtr, k);
+                printf("%f %f %f %f %f %d %d\n", amp, phase, delay, srcAngle,
+                       recvAngle, nTopBnc, nBotBnc);
+            }
+            receverPtr->destory(receverPtr);
+        }
+        printf("\n");
+    }
+    cBellhopConfigParaPtr2->destory(cBellhopConfigParaPtr2);
+    cBellResultPtr2->destory(cBellResultPtr2);
     return 0;
 }

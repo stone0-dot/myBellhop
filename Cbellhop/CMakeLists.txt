@@ -13,6 +13,7 @@ add_library(${PROJECT_NAME}
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out
 )
 
 add_custom_target(

@@ -171,9 +171,15 @@ contains
       allocate(create_growth_double_vector%vector(capacity))
    END FUNCTION
    !--------------------------------------------------------------
-   SUBROUTINE delete_growth_double_vector(vector_ptr) bind(C)
+   SUBROUTINE delete_growth_double_vector(vector_ptr)
       real(8), allocatable :: vector_ptr(:)
       deallocate(vector_ptr)
+   END SUBROUTINE
+   !--------------------------------------------------------------
+   SUBROUTINE delete_xv_result() bind(C)
+      if(allocated(xv_result%vector)) then
+         deallocate(xv_result%vector)
+      end if
    END SUBROUTINE
    !--------------------------------------------------------------
    SUBROUTINE append(vector1, vector2, length)
@@ -201,10 +207,11 @@ contains
       vector1%eleNum = vector1%eleNum + length
    END SUBROUTINE append
    !--------------------------------------------------------------
-   SUBROUTINE delete_c_line_length(c_line_length) bind(C)
-      integer(4), pointer :: c_line_length(:)
-      deallocate(c_line_length)
-   END SUBROUTINE delete_c_line_length
+   SUBROUTINE delete_line_length() bind(C)
+      if(allocated(line_length)) then
+         deallocate(line_length)
+      end if
+   END SUBROUTINE delete_line_length
    !--------------------------------------------------------------
    SUBROUTINE caculate(c_freq, c_ISINGL, c_NIMAGE, c_IBWIN, c_deltas, c_MaxN, c_zBox, c_rBox, &
       c_EPMULT, c_RLOOP,c_TopOpt, c_DepthT, CPT_real, CPT_aimag, c_RHOT, &
@@ -441,6 +448,135 @@ contains
          deallocate(nBotBncArr_1D)
       end if
    END SUBROUTINE delete_arr_result
+!*******************************************************************************!
+   SUBROUTINE delete_refcomod_config_para() bind(C)
+      USE RefCoMod
+      if(allocated(thetaBot)) then
+         deallocate(thetaBot)
+      end if
+      if(allocated(RBot)) then
+         deallocate(RBot)
+      end if
+      if(allocated(phiBot)) then
+         deallocate(phiBot)
+      end if
+      if(allocated(thetaTop)) then
+         deallocate(thetaTop)
+      end if
+      if(allocated(RTop)) then
+         deallocate(RTop)
+      end if
+      if(allocated(phiTop)) then
+         deallocate(phiTop)
+      end if
+      if(allocated(ITab)) then
+         deallocate(ITab)
+      end if
+      if(allocated(XTab)) then
+         deallocate(XTab)
+      end if
+      if(allocated(FTab)) then
+         deallocate(FTab)
+      end if
+      if(allocated(GTab)) then
+         deallocate(GTab)
+      end if
+   END SUBROUTINE
+!*******************************************************************************!
+   SUBROUTINE delete_bdrymod_config_para() bind(C)
+      USE bdryMod
+      if(allocated(xBot)) then
+         deallocate(xBot)
+      end if
+      if(allocated(tBot)) then
+         deallocate(tBot)
+      end if
+      if(allocated(nBot)) then
+         deallocate(nBot)
+      end if
+      if(allocated(RLenBot)) then
+         deallocate(RLenBot)
+      end if
+      if(allocated(xTop)) then
+         deallocate(xTop)
+      end if
+      if(allocated(tTop)) then
+         deallocate(tTop)
+      end if
+      if(allocated(nTop)) then
+         deallocate(nTop)
+      end if
+      if(allocated(RLenTop)) then
+         deallocate(RLenTop)
+      end if
+   END SUBROUTINE
+!*******************************************************************************!
+   SUBROUTINE delete_anglemod_config_para() bind(C)
+      USE angleMod
+      if(allocated(Alpha)) then
+         deallocate(Alpha)
+      end if
+   END SUBROUTINE
+!*******************************************************************************!
+   SUBROUTINE delete_sdrdrmod_config_para() bind(C)
+      USE SdRdRMod
+      if(allocated(ISD)) then
+         deallocate(ISD)
+      end if
+      if(allocated(IRD)) then
+         deallocate(IRD)
+      end if
+      if(allocated(SD)) then
+         deallocate(SD)
+      end if
+      if(allocated(RD)) then
+         deallocate(RD)
+      end if
+      if(allocated(WS)) then
+         deallocate(WS)
+      end if
+      if(allocated(WR)) then
+         deallocate(WR)
+      end if
+      if(allocated(R)) then
+         deallocate(R)
+      end if
+   END SUBROUTINE
+!*******************************************************************************!
+   SUBROUTINE delete_arrmod_config_para() bind(C)
+      USE ArrMod
+      if(allocated(NArr)) then
+         deallocate(NArr)
+      end if
+      if(allocated(NTopBncArr)) then
+         deallocate(NTopBncArr)
+      end if
+      if(allocated(NBotBncArr)) then
+         deallocate(NBotBncArr)
+      end if
+      if(allocated(DelArr)) then
+         deallocate(DelArr)
+      end if
+      if(allocated(SrcAngArr)) then
+         deallocate(SrcAngArr)
+      end if
+      if(allocated(RcvrAngArr)) then
+         deallocate(RcvrAngArr)
+      end if
+      if(allocated(AArr)) then
+         deallocate(AArr)
+      end if
+      if(allocated(PhaseArr)) then
+         deallocate(PhaseArr)
+      end if
+   END SUBROUTINE
+!*******************************************************************************!
+   SUBROUTINE delte_beampatternmod_config_para() bind(C)
+      USE BeamPatternMod
+      if(allocated(SrcBmPat)) then
+         deallocate(SrcBmPat)
+      end if
+   END SUBROUTINE
 !*******************************************************************************!
    SUBROUTINE Ccaculate(c_title, c_title_len, &
       c_freq, c_ISINGL, c_NIMAGE, c_IBWIN, c_deltas, c_zBox, c_rBox, &

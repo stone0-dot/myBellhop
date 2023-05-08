@@ -375,8 +375,8 @@ struct CurveResult* curveResultCreate() {
     return curveResultPtr;
 }
 void curveResultDestory(struct CurveResult* curveResultPtr) {
-    delete_c_line_length(&curveResultPtr->curveLengthArr);
-    delete_growth_double_vector(&curveResultPtr->curveContain);
+    delete_line_length();
+    delete_xv_result();
     free(curveResultPtr);
 }
 int curveResultGetCurveNum(const struct CurveResult* curveResultPtr) {
@@ -662,5 +662,11 @@ void cBellResultDestory(struct CBellResult* cBellResultPtr) {
     cBellResultPtr->curveResultPtr->destory(cBellResultPtr->curveResultPtr);
     cBellResultPtr->energyResultPtr->destory(cBellResultPtr->energyResultPtr);
     cBellResultPtr->arrResultPtr->destory(cBellResultPtr->arrResultPtr);
+    delete_refcomod_config_para();
+    delete_sdrdrmod_config_para();
+    delte_beampatternmod_config_para();
+    delete_bdrymod_config_para();
+    delete_arrmod_config_para();
+    delete_anglemod_config_para();
     free(cBellResultPtr);
 }
