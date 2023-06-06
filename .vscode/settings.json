@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "readin.h": "c",
-        "getresult.h": "c"
-    },
-    "editor.formatOnSave": true
-}
